@@ -27,7 +27,7 @@ param keyVaultName string = ''
 @description('Name of the User-Assigned Managed Identity')
 param managedIdentityName string = ''
 
-@description('Name of the Container App for TOPdesk simulator')
+@description('Name of the Container App for ServiceDesk simulator')
 param containerAppName string = ''
 
 @description('Model deployment name')
@@ -101,7 +101,7 @@ module logicApp './modules/logic-app.bicep' = {
   }
 }
 
-// Container App (TOPdesk Simulator)
+// Container App (ServiceDesk Simulator)
 module containerApp './modules/container-app.bicep' = {
   name: 'container-app'
   scope: rg

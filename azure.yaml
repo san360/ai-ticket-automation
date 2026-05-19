@@ -2,12 +2,12 @@ name: ai-ticket-automation
 metadata:
   template: ai-ticket-automation@0.0.1
 services:
-  topdesk-simulator:
-    project: ./src/topdesk-simulator
+  servicedesk-simulator:
+    project: ./src/servicedesk-simulator
     host: containerapp
     language: python
     docker:
-      path: ./src/topdesk-simulator/Dockerfile
+      path: ./src/servicedesk-simulator/Dockerfile
 hooks:
   postprovision:
     shell: pwsh

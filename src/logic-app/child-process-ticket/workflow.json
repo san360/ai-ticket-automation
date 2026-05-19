@@ -131,14 +131,14 @@
                     }
                 }
             },
-            "Write_Classification_to_TOPdesk": {
+            "Write_Classification_to_ServiceDesk": {
                 "type": "Http",
                 "runAfter": {
                     "Parse_Message": ["Succeeded"]
                 },
                 "inputs": {
                     "method": "PATCH",
-                    "uri": "@{appsetting('TOPDESK_BASE_URL')}/api/incidents/@{triggerBody()?['id']}",
+                    "uri": "@{appsetting('SERVICEDESK_BASE_URL')}/api/incidents/@{triggerBody()?['id']}",
                     "headers": {
                         "Content-Type": "application/json"
                     },
@@ -156,11 +156,11 @@
             "Post_HR_Summary_Internal_Note": {
                 "type": "Http",
                 "runAfter": {
-                    "Write_Classification_to_TOPdesk": ["Succeeded"]
+                    "Write_Classification_to_ServiceDesk": ["Succeeded"]
                 },
                 "inputs": {
                     "method": "POST",
-                    "uri": "@{appsetting('TOPDESK_BASE_URL')}/api/incidents/@{triggerBody()?['id']}/actions",
+                    "uri": "@{appsetting('SERVICEDESK_BASE_URL')}/api/incidents/@{triggerBody()?['id']}/actions",
                     "headers": {
                         "Content-Type": "application/json"
                     },
@@ -178,7 +178,7 @@
                 },
                 "inputs": {
                     "method": "POST",
-                    "uri": "@{appsetting('TOPDESK_BASE_URL')}/api/incidents/@{triggerBody()?['id']}/actions",
+                    "uri": "@{appsetting('SERVICEDESK_BASE_URL')}/api/incidents/@{triggerBody()?['id']}/actions",
                     "headers": {
                         "Content-Type": "application/json"
                     },

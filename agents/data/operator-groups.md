@@ -1,6 +1,6 @@
 # Operator Group Mappings
 
-| Operator Group Name | TOPdesk ID | Description |
+| Operator Group Name | ServiceDesk ID | Description |
 |---|---|---|
 | HR-Absence-Management | OG-HR-ABS-001 | Handles all leave types: sick, vacation, maternity, unpaid, bereavement |
 | HR-Personnel-Admin | OG-HR-PA-002 | Personal data changes, contracts, references, work arrangements |

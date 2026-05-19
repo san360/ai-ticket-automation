@@ -17,7 +17,7 @@
                 "runAfter": {},
                 "inputs": {
                     "method": "GET",
-                    "uri": "@{appsetting('TOPDESK_BASE_URL')}/api/incidents?status=open",
+                    "uri": "@{appsetting('SERVICEDESK_BASE_URL')}/api/incidents?status=open",
                     "headers": {
                         "Content-Type": "application/json"
                     }

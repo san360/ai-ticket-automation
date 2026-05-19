@@ -35,7 +35,7 @@ Return ONLY valid JSON in the following format:
 {
   "category": "string — the primary category from taxonomy",
   "subcategory": "string — the subcategory from taxonomy",
-  "operatorGroup": "string — the TOPdesk operator group ID",
+  "operatorGroup": "string — the ServiceDesk operator group ID",
   "language": "DE | FR | IT | EN",
   "missingInfo": ["list of required fields/documents that are missing"],
   "confidence": 0.0-1.0,

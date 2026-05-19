@@ -7,10 +7,10 @@
                 <mxCell id="title" value="Option D: Logic Apps (Parent–Child) + Foundry Agents — Responses API" style="text;html=1;fontSize=20;fontStyle=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;fontColor=#333333;" parent="1" vertex="1">
                     <mxGeometry x="40" y="15" width="900" height="35" as="geometry"/>
                 </mxCell>
-                <mxCell id="subtitle" value="Parent workflow: scheduled, polls TOPdesk for open tickets, iterates For Each → calls child workflow. Child workflow: calls Classifier Agent + Message Agent (Responses API) → updates TOPdesk. No Table Storage. No DLQ." style="text;html=1;fontSize=11;fontStyle=2;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;fontColor=#666666;whiteSpace=wrap;" parent="1" vertex="1">
+                <mxCell id="subtitle" value="Parent workflow: scheduled, polls ServiceDesk for open tickets, iterates For Each → calls child workflow. Child workflow: calls Classifier Agent + Message Agent (Responses API) → updates ServiceDesk. No Table Storage. No DLQ." style="text;html=1;fontSize=11;fontStyle=2;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;fontColor=#666666;whiteSpace=wrap;" parent="1" vertex="1">
                     <mxGeometry x="40" y="48" width="1300" height="25" as="geometry"/>
                 </mxCell>
-                <mxCell id="topdesk" value="TOPdesk SaaS&#xa;Incident API v4.2.4" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#616161;fontColor=#FFFFFF;strokeColor=none;fontSize=11;fontStyle=1;arcSize=10;" parent="1" vertex="1">
+                <mxCell id="ServiceDesk" value="ServiceDesk SaaS&#xa;Incident API v4.2.4" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#616161;fontColor=#FFFFFF;strokeColor=none;fontSize=11;fontStyle=1;arcSize=10;" parent="1" vertex="1">
                     <mxGeometry x="20" y="310" width="160" height="60" as="geometry"/>
                 </mxCell>
                 <mxCell id="la_boundary" value="Logic Apps Standard (WS1) — Switzerland North" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F0FE;strokeColor=#4285F4;strokeWidth=2;dashed=1;verticalAlign=top;fontStyle=1;fontSize=13;arcSize=5;" parent="1" vertex="1">
@@ -28,7 +28,7 @@
                 <mxCell id="p_recurrence" value="⏱ Recurrence&#xa;(Scheduled)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E6F4EA;strokeColor=#34A853;strokeWidth=1;fontSize=10;fontStyle=1;arcSize=15;" parent="1" vertex="1">
                     <mxGeometry x="290" y="170" width="120" height="45" as="geometry"/>
                 </mxCell>
-                <mxCell id="p_poll" value="HTTP GET&#xa;Poll TOPdesk&#xa;status=open" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#616161;strokeWidth=1;fontSize=10;arcSize=10;" parent="1" vertex="1">
+                <mxCell id="p_poll" value="HTTP GET&#xa;Poll ServiceDesk&#xa;status=open" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#616161;strokeWidth=1;fontSize=10;arcSize=10;" parent="1" vertex="1">
                     <mxGeometry x="450" y="165" width="130" height="55" as="geometry"/>
                 </mxCell>
                 <mxCell id="p_filter_note" value="Filter: status == &quot;open&quot;&#xa;(no watermark needed)" style="text;html=1;fontSize=9;fontStyle=2;fillColor=none;strokeColor=none;fontColor=#616161;" parent="1" vertex="1">
@@ -52,7 +52,7 @@
                 <mxCell id="pe3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#E65100;strokeWidth=1.5;endArrow=blockThin;endFill=1;" parent="1" source="p_foreach" target="p_call_child" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="pe_topdesk" value="GET /incidents?status=open" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#616161;strokeWidth=1.5;endArrow=blockThin;endFill=1;fontSize=9;fontColor=#333333;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="p_poll" target="topdesk" edge="1">
+                <mxCell id="pe_ServiceDesk" value="GET /incidents?status=open" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#616161;strokeWidth=1.5;endArrow=blockThin;endFill=1;fontSize=9;fontColor=#333333;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="p_poll" target="ServiceDesk" edge="1">
                     <mxGeometry relative="1" as="geometry">
                         <Array as="points">
                             <mxPoint x="210" y="192"/>
@@ -81,10 +81,10 @@
                 <mxCell id="c_parse2" value="Parse JSON&#xa;Message" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#0078D4;strokeWidth=1;fontSize=10;arcSize=10;" parent="1" vertex="1">
                     <mxGeometry x="980" y="345" width="100" height="45" as="geometry"/>
                 </mxCell>
-                <mxCell id="c_patch" value="HTTP PATCH&#xa;Write Classification&#xa;to TOPdesk" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#616161;strokeWidth=1;fontSize=10;arcSize=10;" parent="1" vertex="1">
+                <mxCell id="c_patch" value="HTTP PATCH&#xa;Write Classification&#xa;to ServiceDesk" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#616161;strokeWidth=1;fontSize=10;arcSize=10;" parent="1" vertex="1">
                     <mxGeometry x="440" y="440" width="150" height="55" as="geometry"/>
                 </mxCell>
-                <mxCell id="c_action" value="HTTP POST&#xa;Post Action Note&#xa;to TOPdesk" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#616161;strokeWidth=1;fontSize=10;arcSize=10;" parent="1" vertex="1">
+                <mxCell id="c_action" value="HTTP POST&#xa;Post Action Note&#xa;to ServiceDesk" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#616161;strokeWidth=1;fontSize=10;arcSize=10;" parent="1" vertex="1">
                     <mxGeometry x="640" y="440" width="150" height="55" as="geometry"/>
                 </mxCell>
                 <mxCell id="c_response" value="Response&#xa;(200 OK)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E6F4EA;strokeColor=#34A853;strokeWidth=1;fontSize=10;fontStyle=1;arcSize=15;" parent="1" vertex="1">
@@ -116,7 +116,7 @@
                 <mxCell id="ce7" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#34A853;strokeWidth=1.5;endArrow=blockThin;endFill=1;" parent="1" source="c_action" target="c_response" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="ce_topdesk_patch" value="PATCH + POST" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#616161;strokeWidth=1.5;endArrow=blockThin;endFill=1;fontSize=9;fontColor=#333333;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="c_patch" target="topdesk" edge="1">
+                <mxCell id="ce_ServiceDesk_patch" value="PATCH + POST" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#616161;strokeWidth=1.5;endArrow=blockThin;endFill=1;fontSize=9;fontColor=#333333;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="c_patch" target="ServiceDesk" edge="1">
                     <mxGeometry relative="1" as="geometry">
                         <Array as="points">
                             <mxPoint x="210" y="467"/>
@@ -203,7 +203,7 @@
                         </Array>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="kv" value="Key Vault&#xa;TOPdesk API Creds&#xa;+ Foundry Key" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF8C00;fontColor=#FFFFFF;strokeColor=none;fontSize=10;fontStyle=1;arcSize=10;" parent="1" vertex="1">
+                <mxCell id="kv" value="Key Vault&#xa;ServiceDesk API Creds&#xa;+ Foundry Key" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF8C00;fontColor=#FFFFFF;strokeColor=none;fontSize=10;fontStyle=1;arcSize=10;" parent="1" vertex="1">
                     <mxGeometry x="1370" y="180" width="170" height="60" as="geometry"/>
                 </mxCell>
                 <mxCell id="legend_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F9F9F9;strokeColor=#CCCCCC;strokeWidth=1;arcSize=5;" parent="1" vertex="1">
@@ -212,7 +212,7 @@
                 <mxCell id="legend_title" value="Architecture Notes" style="text;html=1;fontSize=12;fontStyle=1;fillColor=none;strokeColor=none;align=left;fontColor=#333333;" parent="1" vertex="1">
                     <mxGeometry x="245" y="925" width="200" height="25" as="geometry"/>
                 </mxCell>
-                <mxCell id="legend_content" value="• Parent workflow: Scheduled → polls TOPdesk for open tickets (status=open) → For Each → calls child workflow&#xa;• Child workflow: Request trigger → Classifier Agent → Parse → Message Agent → Parse → PATCH TOPdesk → POST action → Response&#xa;• No Table Storage / watermark — TOPdesk status column = the state machine (open → processed)&#xa;• No DLQ — child workflow failures visible in run history; retried via Logic Apps built-in retry policies&#xa;• Responses API: Single POST call per agent, synchronous response — no thread/run/poll loop needed&#xa;• Classifier-Agent uses File Search tool (Vector Store with HR policies + taxonomy)&#xa;• Message-Agent: instructions-only (no tools) — generates HR summary (EN) + employee message (ticket lang. + EN)&#xa;• TOPdesk write-back: child workflow PATCH classification + POST action note after both agents complete" style="text;html=1;fontSize=10;fontStyle=0;fillColor=none;strokeColor=none;align=left;verticalAlign=top;fontColor=#555555;whiteSpace=wrap;" parent="1" vertex="1">
+                <mxCell id="legend_content" value="• Parent workflow: Scheduled → polls ServiceDesk for open tickets (status=open) → For Each → calls child workflow&#xa;• Child workflow: Request trigger → Classifier Agent → Parse → Message Agent → Parse → PATCH ServiceDesk → POST action → Response&#xa;• No Table Storage / watermark — ServiceDesk status column = the state machine (open → processed)&#xa;• No DLQ — child workflow failures visible in run history; retried via Logic Apps built-in retry policies&#xa;• Responses API: Single POST call per agent, synchronous response — no thread/run/poll loop needed&#xa;• Classifier-Agent uses File Search tool (Vector Store with HR policies + taxonomy)&#xa;• Message-Agent: instructions-only (no tools) — generates HR summary (EN) + employee message (ticket lang. + EN)&#xa;• ServiceDesk write-back: child workflow PATCH classification + POST action note after both agents complete" style="text;html=1;fontSize=10;fontStyle=0;fillColor=none;strokeColor=none;align=left;verticalAlign=top;fontColor=#555555;whiteSpace=wrap;" parent="1" vertex="1">
                     <mxGeometry x="245" y="950" width="740" height="130" as="geometry"/>
                 </mxCell>
                 <mxCell id="badge_1" value="Logic Apps: All GA ✅" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E6F4EA;strokeColor=#34A853;fontSize=10;fontStyle=1;arcSize=15;" parent="1" vertex="1">
@@ -269,7 +269,7 @@
                 <mxCell id="cl6" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#616161;strokeColor=none;" parent="1" vertex="1">
                     <mxGeometry x="665" y="1102" width="16" height="16" as="geometry"/>
                 </mxCell>
-                <mxCell id="cl6t" value="TOPdesk" style="text;html=1;fontSize=9;fillColor=none;strokeColor=none;fontColor=#333333;" parent="1" vertex="1">
+                <mxCell id="cl6t" value="ServiceDesk" style="text;html=1;fontSize=9;fillColor=none;strokeColor=none;fontColor=#333333;" parent="1" vertex="1">
                     <mxGeometry x="684" y="1100" width="50" height="20" as="geometry"/>
                 </mxCell>
             </root>

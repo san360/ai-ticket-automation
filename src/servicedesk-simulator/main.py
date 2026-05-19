@@ -1,4 +1,4 @@
-"""TOPdesk Simulator — In-memory HR ticket system with REST API and rich UI."""
+"""ServiceDesk Simulator — In-memory HR ticket system with REST API and rich UI."""
 
 from datetime import datetime, timezone
 from enum import Enum
@@ -11,7 +11,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field
 
-app = FastAPI(title="TOPdesk Simulator", version="1.0.0")
+app = FastAPI(title="ServiceDesk Simulator", version="1.0.0")
 templates = Jinja2Templates(directory="templates")
 
 
@@ -165,7 +165,7 @@ def seed_database():
 seed_database()
 
 
-# --- API Endpoints (TOPdesk-compatible) ---
+# --- API Endpoints (ServiceDesk API) ---
 
 @app.get("/api/incidents", response_model=list[Ticket])
 def list_incidents(status: Optional[str] = None):

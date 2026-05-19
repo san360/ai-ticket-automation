@@ -131,4 +131,4 @@ jobs:
             --resource-group "${{ needs.deploy-infra.outputs.resource_group }}" \
             --settings \
               "VECTOR_STORE_ID=$VECTOR_STORE_ID" \
-              "TOPDESK_BASE_URL=${{ needs.deploy-infra.outputs.container_app_url }}"
+              "SERVICEDESK_BASE_URL=${{ needs.deploy-infra.outputs.container_app_url }}"

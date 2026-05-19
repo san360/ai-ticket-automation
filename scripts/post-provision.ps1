@@ -38,15 +38,15 @@ if (Test-Path $outputsFile) {
 
     # Update Logic App settings
     Write-Host "`n--- Updating Logic App Configuration ---" -ForegroundColor Yellow
-    $topDeskUrl = azd env get-value CONTAINER_APP_URL
+    $serviceDeskUrl = azd env get-value CONTAINER_APP_URL
 
     az webapp config appsettings set `
         --name $logicAppName `
         --resource-group $resourceGroup `
-        --settings "VECTOR_STORE_ID=$vectorStoreId" "TOPDESK_BASE_URL=$topDeskUrl" `
+        --settings "VECTOR_STORE_ID=$vectorStoreId" "SERVICEDESK_BASE_URL=$serviceDeskUrl" `
         --output none
 
-    Write-Host "Logic App configured with VECTOR_STORE_ID and TOPDESK_BASE_URL" -ForegroundColor Green
+    Write-Host "Logic App configured with VECTOR_STORE_ID and SERVICEDESK_BASE_URL" -ForegroundColor Green
 }
 
 Write-Host "`n=== Post-Provision Complete ===" -ForegroundColor Cyan

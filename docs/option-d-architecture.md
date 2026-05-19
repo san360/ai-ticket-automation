@@ -2,12 +2,12 @@
 
 ## Overview
 
-A Logic Apps Standard (WS1) deployment in Switzerland North orchestrates the end-to-end processing of HR tickets from TOPdesk. It uses a **parent–child workflow pattern** where the parent handles scheduling and iteration, and the child handles per-ticket AI classification and messaging via Microsoft Foundry Agents (Responses API).
+A Logic Apps Standard (WS1) deployment in Switzerland North orchestrates the end-to-end processing of HR tickets from a ServiceDesk system. It uses a **parent–child workflow pattern** where the parent handles scheduling and iteration, and the child handles per-ticket AI classification and messaging via Microsoft Foundry Agents (Responses API).
 
 **Key design decisions:**
 
 - No agent loops — single synchronous POST per agent call
-- No Table Storage / watermark — TOPdesk `status` column is the state machine (`open` → `processed`)
+- No Table Storage / watermark — ServiceDesk `status` column is the state machine (`open` → `processed`)
 - No Dead Letter Queue — child workflow failures are visible in Logic Apps run history; retry via built-in retry policies
 - All Logic Apps actions are GA (Generally Available)
 
@@ -20,7 +20,7 @@ A Logic Apps Standard (WS1) deployment in Switzerland North orchestrates the end
 | Orchestrator | Logic Apps Standard (WS1) | Switzerland North |
 | Classifier-Agent | Microsoft Foundry Agent Service | — |
 | Message-Agent | Microsoft Foundry Agent Service | — |
-| Ticket System | TOPdesk SaaS (Incident API v4.2.4) | External |
+| Ticket System | ServiceDesk (Incident API) | External |
 | Secrets | Azure Key Vault | Switzerland North |
 | Knowledge Base | Foundry Vector Store (auto-chunked & embedded) | — |
 
@@ -28,11 +28,11 @@ A Logic Apps Standard (WS1) deployment in Switzerland North orchestrates the end
 
 ## Parent Workflow — Scheduler & Iterator
 
-The parent workflow is responsible for polling TOPdesk and dispatching work to the child.
+The parent workflow is responsible for polling the ServiceDesk and dispatching work to the child.
 
 ```
 ⏱ Recurrence (Scheduled)
-    → HTTP GET: Poll TOPdesk (filter: status == "open")
+    → HTTP GET: Poll ServiceDesk (filter: status == "open")
         → For Each Ticket
             → Call Child Workflow (pass ticket payload)
 ```
@@ -42,7 +42,7 @@ The parent workflow is responsible for polling TOPdesk and dispatching work to t
 | # | Action | Details |
 |---|--------|---------|
 | 1 | **Recurrence trigger** | Scheduled interval (configurable) |
-| 2 | **HTTP GET** | `GET /incidents?status=open` — FIQL query against TOPdesk API v4.2.4. No watermark needed; the status column itself acts as the state machine. |
+| 2 | **HTTP GET** | `GET /incidents?status=open` — query against ServiceDesk API. No watermark needed; the status column itself acts as the state machine. |
 | 3 | **For Each** | Iterates over returned open tickets |
 | 4 | **Call workflow in this logic app** (GA action) | Passes the full ticket payload to the child workflow |
 
@@ -50,7 +50,7 @@ The parent workflow is responsible for polling TOPdesk and dispatching work to t
 
 ## Child Workflow — Per-Ticket Processing
 
-The child workflow processes a single ticket: classifies it, generates a message, and writes results back to TOPdesk.
+The child workflow processes a single ticket: classifies it, generates a message, and writes results back to ServiceDesk.
 
 ```
 Request Trigger (from Parent)
@@ -58,8 +58,8 @@ Request Trigger (from Parent)
         → Parse JSON (Classification)
             → HTTP POST: Foundry Message-Agent (Responses API)
                 → Parse JSON (Message)
-                    → HTTP PATCH: Write Classification to TOPdesk
-                        → HTTP POST: Post Action Note to TOPdesk
+                    → HTTP PATCH: Write Classification to ServiceDesk
+                        → HTTP POST: Post Action Note to ServiceDesk
                             → Response (200 OK)
 ```
 
@@ -72,8 +72,8 @@ Request Trigger (from Parent)
 | 3 | **Parse JSON** | Extracts classification fields from Classifier-Agent response |
 | 4 | **HTTP POST — Message-Agent** | Single `POST /responses` to Foundry. Passes classification result + original ticket. Synchronous. |
 | 5 | **Parse JSON** | Extracts message fields from Message-Agent response |
-| 6 | **HTTP PATCH** | Writes classification (category, subcategory, operator group) to TOPdesk incident |
-| 7 | **HTTP POST** | Posts the action note (HR summary + employee message) to the TOPdesk incident |
+| 6 | **HTTP PATCH** | Writes classification (category, subcategory, operator group) to ServiceDesk incident |
+| 7 | **HTTP POST** | Posts the action note (HR summary + employee message) to the ServiceDesk incident |
 | 8 | **Response** | Returns 200 OK to parent workflow |
 
 ---
@@ -97,7 +97,7 @@ Request Trigger (from Parent)
 |----------|---------|
 | Sample Incidents | Few-shot examples for accurate classification |
 | Category Taxonomy | Full list of categories, subcategories, and their definitions |
-| Operator Group IDs | Mapping of operator groups to their TOPdesk identifiers |
+| Operator Group IDs | Mapping of operator groups to their ServiceDesk identifiers |
 
 ### Output JSON
 
@@ -138,15 +138,15 @@ None — **instructions-only** (no file search, no tools). All behaviour is driv
 
 ---
 
-## TOPdesk Integration
+## ServiceDesk Integration
 
 | Operation | Method | Endpoint | Purpose |
-|-----------|--------|----------|---------|
+|-----------|--------|----------|----------|
 | Poll open tickets | `GET` | `/incidents?status=open` | Parent workflow fetches unprocessed tickets |
 | Write classification | `PATCH` | `/incidents/{id}` | Child writes category, subcategory, operator group |
 | Post action note | `POST` | `/incidents/{id}/actions` | Child posts HR summary + employee message |
 
-The TOPdesk **status column** serves as the state machine:
+The ServiceDesk **status column** serves as the state machine:
 - `open` → ticket awaiting processing
 - `processed` → ticket has been classified and messaged
 
@@ -162,7 +162,7 @@ Documents are uploaded to a Foundry Vector Store, auto-chunked and embedded. Use
 |----------|---------|
 | Sample Incidents | Reference incidents with correct classifications (few-shot) |
 | Category Taxonomy | Hierarchical category → subcategory definitions |
-| Operator Group IDs | Group names mapped to TOPdesk IDs |
+| Operator Group IDs | Group names mapped to ServiceDesk IDs |
 
 ---
 
@@ -170,7 +170,7 @@ Documents are uploaded to a Foundry Vector Store, auto-chunked and embedded. Use
 
 | Concern | Solution |
 |---------|----------|
-| TOPdesk API credentials | Stored in Azure Key Vault |
+| ServiceDesk API credentials | Stored in Azure Key Vault |
 | Foundry API key | Stored in Azure Key Vault |
 | Access to Key Vault | Logic App managed identity |
 
@@ -193,6 +193,6 @@ Documents are uploaded to a Foundry Vector Store, auto-chunked and embedded. Use
 | Logic Apps actions | All GA ✅ |
 | Agent loop | None — single POST per agent |
 | API style | Responses API (synchronous) |
-| State management | No Table Storage — TOPdesk status column |
+| State management | No Table Storage — ServiceDesk status column |
 | Pattern | Parent–Child workflow |
 | DLQ | Not required |

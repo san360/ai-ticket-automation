@@ -36,11 +36,11 @@ resource containerAppsEnv 'Microsoft.App/managedEnvironments@2024-03-01' = {
   }
 }
 
-// Container App (TOPdesk Simulator)
+// Container App (ServiceDesk Simulator)
 resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
   name: name
   location: location
-  tags: union(tags, { 'azd-service-name': 'topdesk-simulator' })
+  tags: union(tags, { 'azd-service-name': 'servicedesk-simulator' })
   properties: {
     environmentId: containerAppsEnv.id
     configuration: {
@@ -54,7 +54,7 @@ resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
     template: {
       containers: [
         {
-          name: 'topdesk-simulator'
+          name: 'servicedesk-simulator'
           image: 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest'
           resources: {
             cpu: json('0.5')

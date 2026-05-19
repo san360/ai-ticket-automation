@@ -1,6 +1,6 @@
 # AI Ticket Automation
 
-**Logic Apps (Parent–Child) + Microsoft Foundry Agents** — Automated HR ticket classification and response generation for TOPdesk.
+**Logic Apps (Parent–Child) + Microsoft Foundry Agents** — Automated HR ticket classification and response generation.
 
 ## Architecture
 
@@ -17,7 +17,7 @@ graph LR
     end
     
     subgraph "External"
-        F[TOPdesk<br/>HR Tickets]
+        F[ServiceDesk<br/>HR Tickets]
     end
     
     A -->|Poll open tickets| F
@@ -35,7 +35,7 @@ graph LR
 | Classifier Agent | Foundry Agent (gpt-4.1-mini) | Category, subcategory, operator group, confidence |
 | Message Agent | Foundry Agent (gpt-4.1-mini) | HR summary + employee message generation |
 | Knowledge Base | Foundry Vector Store | Taxonomy, sample incidents, operator groups |
-| Ticket System | TOPdesk Simulator (Python/FastAPI) | Mock incident API with rich UI |
+| Ticket System | ServiceDesk Simulator (Python/FastAPI) | Mock incident API with rich UI |
 | Secrets | Azure Key Vault | API credentials management |
 | Identity | User-Assigned Managed Identity | Logic App → Foundry authentication |
 
@@ -68,7 +68,7 @@ graph LR
 │   ├── logic-app/           # Logic Apps workflow definitions
 │   │   ├── parent-scheduler/
 │   │   └── child-process-ticket/
-│   └── topdesk-simulator/   # Python FastAPI mock TOPdesk
+│   └── servicedesk-simulator/   # Python FastAPI mock ServiceDesk
 │       ├── main.py
 │       ├── templates/
 │       └── Dockerfile
@@ -98,15 +98,15 @@ azd up
 
 This will:
 1. Deploy all Azure infrastructure (Foundry, Logic Apps, Key Vault, Container App)
-2. Deploy the TOPdesk Simulator container
+2. Deploy the ServiceDesk Simulator container
 3. Create Foundry agents and upload vector store data
 4. Configure Logic App with agent endpoints
 
 ### Local Development
 
 ```bash
-# Run TOPdesk Simulator locally
-cd src/topdesk-simulator
+# Run ServiceDesk Simulator locally
+cd src/servicedesk-simulator
 pip install -r requirements.txt
 uvicorn main:app --reload --port 8000
 ```
