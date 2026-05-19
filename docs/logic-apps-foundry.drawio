@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e" pages="1">
-    <diagram id="option-d-alt" name="Option D — Logic Apps + Foundry Agents (Parent-Child)">
-        <mxGraphModel dx="879" dy="668" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1100" math="0" shadow="0">
+    <diagram id="option-d-alt" name="Logic Apps + Foundry Agents (Parent-Child)">
+        <mxGraphModel dx="802" dy="552" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1100" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -160,7 +160,7 @@
                 <mxCell id="agent_a_output" value="Output JSON:&#xa;{ category, subcategory,&#xa;operatorGroup, language,&#xa;missingInfo[] }" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#34A853;strokeWidth=1;fontSize=9;arcSize=10;" parent="1" vertex="1">
                     <mxGeometry x="290" y="795" width="200" height="50" as="geometry"/>
                 </mxCell>
-                <mxCell id="agent_a_note" value="*Missing info = requirements per category&#xa;(e.g. sick leave → doctor&#39;s certificate).&#xa;List provided in Vector Store context." style="text;html=1;fontSize=8;fontStyle=2;fillColor=none;strokeColor=none;fontColor=#999999;whiteSpace=wrap;align=left;" vertex="1" parent="1">
+                <mxCell id="agent_a_note" value="*Missing info = requirements per category&#xa;(e.g. sick leave → doctor&#39;s certificate).&#xa;List provided in Vector Store context." style="text;html=1;fontSize=8;fontStyle=2;fillColor=none;strokeColor=none;fontColor=#999999;whiteSpace=wrap;align=left;" parent="1" vertex="1">
                     <mxGeometry x="500" y="800" width="220" height="40" as="geometry"/>
                 </mxCell>
                 <mxCell id="agent_b_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0FFF0;strokeColor=#008000;strokeWidth=2;arcSize=8;" parent="1" vertex="1">

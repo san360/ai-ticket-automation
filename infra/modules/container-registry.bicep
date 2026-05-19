@@ -1,0 +1,25 @@
+@description('Name of the Container Registry')
+param name string
+
+@description('Location for the resource')
+param location string
+
+@description('Tags for the resource')
+param tags object = {}
+
+// Azure Container Registry
+resource containerRegistry 'Microsoft.ContainerRegistry/registries@2023-07-01' = {
+  name: name
+  location: location
+  tags: tags
+  sku: {
+    name: 'Basic'
+  }
+  properties: {
+    adminUserEnabled: true
+  }
+}
+
+output name string = containerRegistry.name
+output id string = containerRegistry.id
+output loginServer string = containerRegistry.properties.loginServer

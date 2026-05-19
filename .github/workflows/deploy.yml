@@ -7,6 +7,7 @@ on:
       - 'infra/**'
       - 'agents/**'
       - 'scripts/**'
+      - 'evaluation/**'
   workflow_dispatch:
 
 permissions:
@@ -28,6 +29,8 @@ jobs:
       resource_group: ${{ steps.provision.outputs.AZURE_RESOURCE_GROUP }}
       logic_app_name: ${{ steps.provision.outputs.LOGIC_APP_NAME }}
       container_app_url: ${{ steps.provision.outputs.CONTAINER_APP_URL }}
+      container_registry_name: ${{ steps.provision.outputs.CONTAINER_REGISTRY_NAME }}
+      container_registry_login_server: ${{ steps.provision.outputs.CONTAINER_REGISTRY_LOGIN_SERVER }}
 
     steps:
       - uses: actions/checkout@v4
@@ -52,6 +55,8 @@ jobs:
           echo "AZURE_RESOURCE_GROUP=$(azd env get-value AZURE_RESOURCE_GROUP)" >> $GITHUB_OUTPUT
           echo "LOGIC_APP_NAME=$(azd env get-value LOGIC_APP_NAME)" >> $GITHUB_OUTPUT
           echo "CONTAINER_APP_URL=$(azd env get-value CONTAINER_APP_URL)" >> $GITHUB_OUTPUT
+          echo "CONTAINER_REGISTRY_NAME=$(azd env get-value CONTAINER_REGISTRY_NAME)" >> $GITHUB_OUTPUT
+          echo "CONTAINER_REGISTRY_LOGIN_SERVER=$(azd env get-value CONTAINER_REGISTRY_LOGIN_SERVER)" >> $GITHUB_OUTPUT
 
   deploy-agents:
     name: Deploy Foundry Agents
@@ -60,6 +65,7 @@ jobs:
     env:
       AI_FOUNDRY_ENDPOINT: ${{ needs.deploy-infra.outputs.ai_foundry_endpoint }}
       AI_PROJECT_NAME: ${{ needs.deploy-infra.outputs.ai_project_name }}
+      GPT_DEPLOYMENT: ${{ vars.GPT_DEPLOYMENT || 'gpt-4.1-mini' }}
 
     steps:
       - uses: actions/checkout@v4
@@ -111,6 +117,22 @@ jobs:
       - name: Deploy Application
         run: azd deploy --no-prompt
 
+      - name: Build and Push ServiceDesk Simulator Image
+        run: |
+          az acr login --name ${{ needs.deploy-infra.outputs.container_registry_name }}
+          docker build -t ${{ needs.deploy-infra.outputs.container_registry_login_server }}/servicedesk-simulator:${{ github.sha }} \
+            -t ${{ needs.deploy-infra.outputs.container_registry_login_server }}/servicedesk-simulator:latest \
+            src/servicedesk-simulator/
+          docker push ${{ needs.deploy-infra.outputs.container_registry_login_server }}/servicedesk-simulator:${{ github.sha }}
+          docker push ${{ needs.deploy-infra.outputs.container_registry_login_server }}/servicedesk-simulator:latest
+
+      - name: Update Container App Image
+        run: |
+          az containerapp update \
+            --name $(azd env get-value CONTAINER_APP_NAME 2>/dev/null || echo "") \
+            --resource-group ${{ needs.deploy-infra.outputs.resource_group }} \
+            --image ${{ needs.deploy-infra.outputs.container_registry_login_server }}/servicedesk-simulator:${{ github.sha }}
+
       - name: Download agent outputs
         uses: actions/download-artifact@v4
         with:
@@ -130,5 +152,6 @@ jobs:
             --name "${{ needs.deploy-infra.outputs.logic_app_name }}" \
             --resource-group "${{ needs.deploy-infra.outputs.resource_group }}" \
             --settings \
-              "VECTOR_STORE_ID=$VECTOR_STORE_ID" \
+              "CLASSIFIER_AGENT_ID=$CLASSIFIER_AGENT_ID" \
+              "MESSAGE_AGENT_ID=$MESSAGE_AGENT_ID" \
               "SERVICEDESK_BASE_URL=${{ needs.deploy-infra.outputs.container_app_url }}"

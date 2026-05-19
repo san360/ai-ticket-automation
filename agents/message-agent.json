@@ -1,0 +1,13 @@
+{
+  "agent_name": "message-agent",
+  "definition": {
+    "model": "${GPT_DEPLOYMENT}",
+    "instructions_file": "prompts/message-agent.md",
+    "tools": [],
+    "response_format": "json_object"
+  },
+  "eval": {
+    "dataset": "evals/message-golden-dataset.jsonl",
+    "config": "evals/message-eval-config.json"
+  }
+}

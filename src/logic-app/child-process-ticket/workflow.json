@@ -37,19 +37,8 @@
                     },
                     "body": {
                         "model": "gpt-4.1-mini",
-                        "input": "Classify this HR ticket:\n\nSubject: @{triggerBody()?['subject']}\nDescription: @{triggerBody()?['description']}\nCaller: @{triggerBody()?['caller_name']}",
-                        "instructions": "You are an HR ticket classifier. Use file_search to find relevant context from the vector store, then classify the ticket. Return JSON with: category, subcategory, operatorGroup, language, missingInfo, confidence, confidenceReasoning.",
-                        "tools": [
-                            {
-                                "type": "file_search",
-                                "vector_store_ids": ["@{appsetting('VECTOR_STORE_ID')}"]
-                            }
-                        ],
-                        "text": {
-                            "format": {
-                                "type": "json_object"
-                            }
-                        }
+                        "agent_id": "@{appsetting('CLASSIFIER_AGENT_ID')}",
+                        "input": "Classify this HR ticket:\n\nSubject: @{triggerBody()?['subject']}\nDescription: @{triggerBody()?['description']}\nCaller: @{triggerBody()?['caller_name']}"
                     }
                 },
                 "retryPolicy": {
@@ -98,13 +87,8 @@
                     },
                     "body": {
                         "model": "gpt-4.1-mini",
-                        "input": "Generate HR message for this classified ticket:\n\nOriginal Ticket:\nSubject: @{triggerBody()?['subject']}\nDescription: @{triggerBody()?['description']}\n\nClassification:\nCategory: @{body('Parse_Classification')?['category']}\nSubcategory: @{body('Parse_Classification')?['subcategory']}\nLanguage: @{body('Parse_Classification')?['language']}\nMissing Info: @{join(body('Parse_Classification')?['missingInfo'], ', ')}",
-                        "instructions": "You are an HR communication specialist. Generate a professional response. If missingInfo is empty, confirm processing (Scenario A). If missingInfo is non-empty, request the missing items (Scenario B). Return JSON with: hrSummary, employeeMessage, scenario.",
-                        "text": {
-                            "format": {
-                                "type": "json_object"
-                            }
-                        }
+                        "agent_id": "@{appsetting('MESSAGE_AGENT_ID')}",
+                        "input": "Generate HR message for this classified ticket:\n\nOriginal Ticket:\nSubject: @{triggerBody()?['subject']}\nDescription: @{triggerBody()?['description']}\n\nClassification:\nCategory: @{body('Parse_Classification')?['category']}\nSubcategory: @{body('Parse_Classification')?['subcategory']}\nLanguage: @{body('Parse_Classification')?['language']}\nMissing Info: @{join(body('Parse_Classification')?['missingInfo'], ', ')}"
                     }
                 },
                 "retryPolicy": {

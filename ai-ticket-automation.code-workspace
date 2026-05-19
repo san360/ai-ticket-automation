@@ -1,0 +1,17 @@
+{
+  "folders": [
+    {
+      "name": "Logic App",
+      "path": "src/logic-app"
+    }
+  ],
+  "settings": {
+    "azureLogicAppsStandard.projectSubpath": "src/logic-app",
+    "terminal.integrated.env.windows": {
+      "PATH": "\\home\\san360\\.azurelogicapps\\dependencies\\DotNetSDK;${env:PATH}"
+    },
+    "omnisharp.dotNetCliPaths": [
+      "\\home\\san360\\.azurelogicapps\\dependencies\\DotNetSDK"
+    ]
+  }
+}

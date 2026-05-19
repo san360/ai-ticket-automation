@@ -1,0 +1,35 @@
+{
+  "evaluators": {
+    "relevance": {
+      "type": "builtin",
+      "class": "azure.ai.evaluation.RelevanceEvaluator",
+      "description": "Measures if the generated message is relevant to the ticket context"
+    },
+    "coherence": {
+      "type": "builtin",
+      "class": "azure.ai.evaluation.CoherenceEvaluator",
+      "description": "Measures logical consistency and fluency of generated messages"
+    }
+  },
+  "column_mapping": {
+    "query": "${data.query}",
+    "response": "${target.response}",
+    "context": "${data.context}"
+  },
+  "quality_gates": {
+    "relevance": {
+      "min": 4.0,
+      "scale": "1-5",
+      "description": "Minimum relevance score (1=irrelevant, 5=perfectly relevant)"
+    },
+    "coherence": {
+      "min": 4.0,
+      "scale": "1-5",
+      "description": "Minimum coherence score (1=incoherent, 5=perfectly coherent)"
+    }
+  },
+  "model_config": {
+    "deployment": "${EVAL_MODEL_DEPLOYMENT}",
+    "api_version": "2025-01-01-preview"
+  }
+}

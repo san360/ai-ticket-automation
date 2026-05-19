@@ -34,19 +34,20 @@ if (Test-Path $outputsFile) {
         @{ Key = $parts[0]; Value = $parts[1] }
     }
 
-    $vectorStoreId = ($outputs | Where-Object { $_.Key -eq "VECTOR_STORE_ID" }).Value
+    $classifierAgentId = ($outputs | Where-Object { $_.Key -eq "CLASSIFIER_AGENT_ID" }).Value
+    $messageAgentId = ($outputs | Where-Object { $_.Key -eq "MESSAGE_AGENT_ID" }).Value
 
-    # Update Logic App settings
+    # Update Logic App settings with agent IDs
     Write-Host "`n--- Updating Logic App Configuration ---" -ForegroundColor Yellow
     $serviceDeskUrl = azd env get-value CONTAINER_APP_URL
 
     az webapp config appsettings set `
         --name $logicAppName `
         --resource-group $resourceGroup `
-        --settings "VECTOR_STORE_ID=$vectorStoreId" "SERVICEDESK_BASE_URL=$serviceDeskUrl" `
+        --settings "CLASSIFIER_AGENT_ID=$classifierAgentId" "MESSAGE_AGENT_ID=$messageAgentId" "SERVICEDESK_BASE_URL=$serviceDeskUrl" `
         --output none
 
-    Write-Host "Logic App configured with VECTOR_STORE_ID and SERVICEDESK_BASE_URL" -ForegroundColor Green
+    Write-Host "Logic App configured with agent IDs and SERVICEDESK_BASE_URL" -ForegroundColor Green
 }
 
 Write-Host "`n=== Post-Provision Complete ===" -ForegroundColor Cyan

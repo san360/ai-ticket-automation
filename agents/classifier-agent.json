@@ -1,0 +1,22 @@
+{
+  "agent_name": "classifier-agent",
+  "definition": {
+    "model": "${GPT_DEPLOYMENT}",
+    "instructions_file": "prompts/classifier-agent.md",
+    "tools": [
+      {
+        "type": "file_search",
+        "vector_store_files": [
+          "data/category-taxonomy.md",
+          "data/sample-incidents.md",
+          "data/operator-groups.md"
+        ]
+      }
+    ],
+    "response_format": "json_object"
+  },
+  "eval": {
+    "dataset": "evals/classifier-golden-dataset.jsonl",
+    "config": "evals/classifier-eval-config.json"
+  }
+}

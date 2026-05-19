@@ -19,14 +19,20 @@ param keyVaultName string
 @description('AI Foundry endpoint')
 param aiFoundryEndpoint string
 
-@description('AI Foundry project name')
-param aiProjectName string
-
 @description('ServiceDesk base URL (Container App URL)')
 param serviceDeskBaseUrl string = ''
 
 @description('Batch size for ticket processing (default: 1)')
 param batchSize string = '1'
+
+@description('Classifier Agent ID (set post-provision)')
+param classifierAgentId string = ''
+
+@description('Message Agent ID (set post-provision)')
+param messageAgentId string = ''
+
+@description('Application Insights connection string')
+param appInsightsConnectionString string = ''
 
 // App Service Plan (WS1) for Logic Apps Standard
 resource appServicePlan 'Microsoft.Web/serverfarms@2023-12-01' = {
@@ -114,8 +120,12 @@ resource logicApp 'Microsoft.Web/sites@2023-12-01' = {
           value: aiFoundryEndpoint
         }
         {
-          name: 'AI_PROJECT_NAME'
-          value: aiProjectName
+          name: 'CLASSIFIER_AGENT_ID'
+          value: classifierAgentId
+        }
+        {
+          name: 'MESSAGE_AGENT_ID'
+          value: messageAgentId
         }
         {
           name: 'SERVICEDESK_BASE_URL'
@@ -124,6 +134,10 @@ resource logicApp 'Microsoft.Web/sites@2023-12-01' = {
         {
           name: 'BATCH_SIZE'
           value: batchSize
+        }
+        {
+          name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+          value: appInsightsConnectionString
         }
       ]
     }

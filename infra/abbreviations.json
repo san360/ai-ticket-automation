@@ -9,5 +9,6 @@
   "appServicePlan": "asp-",
   "containerRegistry": "cr",
   "containerAppsEnvironment": "cae-",
-  "logAnalyticsWorkspace": "log-"
+  "logAnalyticsWorkspace": "log-",
+  "appInsights": "appi-"
 }

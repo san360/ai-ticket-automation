@@ -1,0 +1,32 @@
+{
+  "evaluators": {
+    "classification_accuracy": {
+      "type": "custom",
+      "class": "evaluators.ClassificationAccuracyEvaluator",
+      "description": "Checks if predicted category, subcategory, operatorGroup match ground truth"
+    },
+    "f1_score": {
+      "type": "builtin",
+      "class": "azure.ai.evaluation.F1ScoreEvaluator"
+    }
+  },
+  "column_mapping": {
+    "query": "${data.query}",
+    "response": "${target.response}",
+    "ground_truth": "${data.ground_truth}"
+  },
+  "quality_gates": {
+    "classification_accuracy": {
+      "min": 0.85,
+      "description": "Minimum classification accuracy across all test cases"
+    },
+    "f1_score": {
+      "min": 0.80,
+      "description": "Minimum F1 score for category classification"
+    }
+  },
+  "model_config": {
+    "deployment": "${EVAL_MODEL_DEPLOYMENT}",
+    "api_version": "2025-01-01-preview"
+  }
+}

@@ -1,7 +1,7 @@
 """Evaluation runner for HR ticket automation agents.
 
-Evaluation name: "agents"
-Run name: <branch-name>/<agent-name> (e.g. "main/classifier", "feature-x/message")
+Evaluation names: "classifier-agent-eval", "message-agent-eval"
+Run name: <branch-name> (e.g. "main", "feature-x")
 Runs separate evaluations per agent.
 """
 
@@ -15,34 +15,35 @@ from run_classifier_eval import run_classifier_evaluation
 from run_message_eval import run_message_evaluation
 
 
-EVALUATION_NAME = "agents"
+CLASSIFIER_EVAL_NAME = "classifier-agent-eval"
+MESSAGE_EVAL_NAME = "message-agent-eval"
 
 
-def get_run_name(agent_name: str) -> str:
-    """Build run name from branch + agent: e.g. 'main/classifier'."""
+def get_run_name() -> str:
+    """Build run name from branch: e.g. 'main', 'feature-x'."""
     branch = os.environ.get("BRANCH_NAME", os.environ.get("GITHUB_HEAD_REF", "local"))
     branch = branch.replace("refs/heads/", "").replace("/", "-")
-    return f"{branch}/{agent_name}"
+    return branch
 
 
 def main():
     """Execute evaluation for all agents."""
     results = {}
+    run_name = get_run_name()
 
     print(f"\n{'='*60}")
-    print(f"EVALUATION: {EVALUATION_NAME}")
+    print(f"EVALUATIONS: {CLASSIFIER_EVAL_NAME}, {MESSAGE_EVAL_NAME}")
+    print(f"RUN: {run_name}")
     print(f"{'='*60}")
 
     # Classifier Agent evaluation
-    classifier_run = get_run_name("classifier")
-    print(f"\n--- Run: {classifier_run} ---")
-    classifier_metrics = run_classifier_evaluation(EVALUATION_NAME, classifier_run)
+    print(f"\n--- {CLASSIFIER_EVAL_NAME} ---")
+    classifier_metrics = run_classifier_evaluation(CLASSIFIER_EVAL_NAME, run_name)
     results["classifier"] = classifier_metrics
 
     # Message Agent evaluation
-    message_run = get_run_name("message")
-    print(f"\n--- Run: {message_run} ---")
-    message_metrics = run_message_evaluation(EVALUATION_NAME, message_run)
+    print(f"\n--- {MESSAGE_EVAL_NAME} ---")
+    message_metrics = run_message_evaluation(MESSAGE_EVAL_NAME, run_name)
     results["message"] = message_metrics
 
     # Write combined summary
