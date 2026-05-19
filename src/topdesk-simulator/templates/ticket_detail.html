@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticket {{ ticket.number }} — TOPdesk Simulator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Segoe UI', system-ui, sans-serif; }
+        .header-gradient { background: linear-gradient(135deg, #1a1d23 0%, #2c3034 100%); }
+        .badge-open { background-color: #ffc107; color: #000; }
+        .badge-processed { background-color: #0dcaf0; color: #000; }
+        .badge-closed { background-color: #198754; }
+        .timeline { position: relative; padding-left: 2rem; }
+        .timeline::before { content: ''; position: absolute; left: 0.75rem; top: 0; bottom: 0; width: 2px; background: #2c3034; }
+        .timeline-item { position: relative; margin-bottom: 1.5rem; }
+        .timeline-item::before { content: ''; position: absolute; left: -1.65rem; top: 0.3rem; width: 12px; height: 12px; border-radius: 50%; background: #0d6efd; border: 2px solid #1a1d23; }
+        .timeline-item.internal::before { background: #6c757d; }
+        .confidence-bar { height: 8px; border-radius: 4px; background: #2c3034; }
+        .confidence-fill { height: 100%; border-radius: 4px; }
+        .confidence-high { background: #198754; }
+        .confidence-med { background: #ffc107; }
+        .confidence-low { background: #dc3545; }
+        .missing-info-badge { border: 1px solid #ffc107; color: #ffc107; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark header-gradient border-bottom border-secondary">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+                <i class="bi bi-arrow-left"></i>
+                <span>Back to Dashboard</span>
+            </a>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+        <div class="row">
+            <!-- Main Content -->
+            <div class="col-lg-8">
+                <!-- Ticket Header -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h4 class="mb-1">{{ ticket.subject }}</h4>
+                                <div class="d-flex gap-2 align-items-center text-muted">
+                                    <code>{{ ticket.number }}</code>
+                                    <span>•</span>
+                                    <span>{{ ticket.caller_name }}</span>
+                                    <span>•</span>
+                                    <span>{{ ticket.created_at.strftime('%Y-%m-%d %H:%M UTC') }}</span>
+                                </div>
+                            </div>
+                            {% if ticket.status.value == 'open' %}
+                            <span class="badge badge-open fs-6">Open</span>
+                            {% elif ticket.status.value == 'processed_by_ai' %}
+                            <span class="badge badge-processed fs-6">AI Processed</span>
+                            {% else %}
+                            <span class="badge badge-closed fs-6">Closed</span>
+                            {% endif %}
+                        </div>
+                        <hr>
+                        <p class="mb-0" style="white-space: pre-wrap;">{{ ticket.description }}</p>
+                    </div>
+                </div>
+
+                <!-- Comments Timeline -->
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0"><i class="bi bi-chat-dots"></i> Activity Timeline</h6>
+                        <span class="badge bg-secondary">{{ ticket.comments|length }} comments</span>
+                    </div>
+                    <div class="card-body">
+                        {% if ticket.comments %}
+                        <div class="timeline">
+                            {% for comment in ticket.comments %}
+                            <div class="timeline-item {% if comment.is_internal %}internal{% endif %}">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <strong>
+                                        {{ comment.author }}
+                                        {% if comment.is_internal %}
+                                        <span class="badge bg-secondary ms-1">Internal</span>
+                                        {% endif %}
+                                    </strong>
+                                    <small class="text-muted">{{ comment.timestamp.strftime('%Y-%m-%d %H:%M') }}</small>
+                                </div>
+                                <p class="mb-0" style="white-space: pre-wrap;">{{ comment.text }}</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <p class="text-muted text-center mb-0">No activity yet</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Add Comment -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="bi bi-plus-circle"></i> Add Comment</h6>
+                    </div>
+                    <div class="card-body">
+                        <form id="commentForm">
+                            <div class="mb-3">
+                                <textarea class="form-control" id="commentText" rows="3" placeholder="Write a comment..."></textarea>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="isInternal">
+                                    <label class="form-check-label" for="isInternal">Internal note</label>
+                                </div>
+                                <button type="button" class="btn btn-primary btn-sm" onclick="addComment()">
+                                    <i class="bi bi-send"></i> Post Comment
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Closure Feedback -->
+                {% if ticket.status.value != 'closed' %}
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="bi bi-star"></i> Close with Feedback</h6>
+                    </div>
+                    <div class="card-body">
+                        <form id="feedbackForm">
+                            <div class="mb-3">
+                                <label class="form-label">Rating</label>
+                                <div class="d-flex gap-2" id="ratingStars">
+                                    {% for i in range(1, 6) %}
+                                    <button type="button" class="btn btn-outline-warning btn-sm star-btn" data-rating="{{ i }}">
+                                        <i class="bi bi-star"></i> {{ i }}
+                                    </button>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <textarea class="form-control" id="feedbackComment" rows="2" placeholder="Optional feedback..."></textarea>
+                            </div>
+                            <button type="button" class="btn btn-success btn-sm" onclick="closeTicket()">
+                                <i class="bi bi-check-circle"></i> Close Ticket
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% elif ticket.closure_feedback %}
+                <div class="card border-success">
+                    <div class="card-header bg-success bg-opacity-10">
+                        <h6 class="mb-0 text-success"><i class="bi bi-check-circle"></i> Closure Feedback</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-2">
+                            {% for i in range(1, 6) %}
+                            <i class="bi bi-star{% if i <= ticket.closure_feedback.rating %}-fill text-warning{% endif %}"></i>
+                            {% endfor %}
+                            <span class="ms-2">({{ ticket.closure_feedback.rating }}/5)</span>
+                        </div>
+                        {% if ticket.closure_feedback.comment %}
+                        <p class="mb-0">{{ ticket.closure_feedback.comment }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Sidebar — Classification -->
+            <div class="col-lg-4">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="bi bi-robot"></i> AI Classification</h6>
+                    </div>
+                    <div class="card-body">
+                        {% if ticket.category %}
+                        <dl class="mb-0">
+                            <dt>Category</dt>
+                            <dd>{{ ticket.category }}</dd>
+                            <dt>Subcategory</dt>
+                            <dd>{{ ticket.subcategory or '—' }}</dd>
+                            <dt>Operator Group</dt>
+                            <dd><code>{{ ticket.operator_group or '—' }}</code></dd>
+                            <dt>Language</dt>
+                            <dd>
+                                {% if ticket.language == 'DE' %} 🇩🇪 German
+                                {% elif ticket.language == 'FR' %} 🇫🇷 French
+                                {% elif ticket.language == 'IT' %} 🇮🇹 Italian
+                                {% elif ticket.language == 'EN' %} 🇬🇧 English
+                                {% else %} {{ ticket.language or '—' }}
+                                {% endif %}
+                            </dd>
+                            <dt>Confidence</dt>
+                            <dd>
+                                {% if ticket.confidence is not none %}
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="confidence-bar flex-grow-1">
+                                        <div class="confidence-fill {% if ticket.confidence >= 0.8 %}confidence-high{% elif ticket.confidence >= 0.5 %}confidence-med{% else %}confidence-low{% endif %}" style="width: {{ (ticket.confidence * 100)|int }}%"></div>
+                                    </div>
+                                    <strong>{{ "%.0f"|format(ticket.confidence * 100) }}%</strong>
+                                </div>
+                                {% else %}
+                                —
+                                {% endif %}
+                            </dd>
+                        </dl>
+                        {% else %}
+                        <p class="text-muted text-center mb-0">Not yet classified</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if ticket.missing_info %}
+                <div class="card border-warning mb-4">
+                    <div class="card-header bg-warning bg-opacity-10">
+                        <h6 class="mb-0 text-warning"><i class="bi bi-exclamation-triangle"></i> Missing Information</h6>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled mb-0">
+                            {% for info in ticket.missing_info %}
+                            <li class="mb-2">
+                                <span class="badge missing-info-badge">Required</span>
+                                {{ info }}
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Quick Actions -->
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="bi bi-lightning"></i> Quick Actions</h6>
+                    </div>
+                    <div class="card-body d-grid gap-2">
+                        {% if ticket.status.value == 'open' %}
+                        <button class="btn btn-outline-info btn-sm" onclick="updateStatus('processed_by_ai')">
+                            <i class="bi bi-robot"></i> Mark as AI Processed
+                        </button>
+                        {% endif %}
+                        {% if ticket.status.value != 'closed' %}
+                        <button class="btn btn-outline-success btn-sm" onclick="updateStatus('closed')">
+                            <i class="bi bi-check-circle"></i> Close Ticket
+                        </button>
+                        {% endif %}
+                        {% if ticket.status.value != 'open' %}
+                        <button class="btn btn-outline-warning btn-sm" onclick="updateStatus('open')">
+                            <i class="bi bi-arrow-counterclockwise"></i> Reopen
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const ticketId = '{{ ticket.id }}';
+        let selectedRating = 3;
+
+        document.querySelectorAll('.star-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                selectedRating = parseInt(btn.dataset.rating);
+                document.querySelectorAll('.star-btn').forEach(b => {
+                    const r = parseInt(b.dataset.rating);
+                    b.classList.toggle('btn-warning', r <= selectedRating);
+                    b.classList.toggle('btn-outline-warning', r > selectedRating);
+                });
+            });
+        });
+
+        async function addComment() {
+            const text = document.getElementById('commentText').value;
+            if (!text) return;
+            await fetch(`/api/incidents/${ticketId}/actions`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    text: text,
+                    author: 'HR Agent',
+                    is_internal: document.getElementById('isInternal').checked,
+                }),
+            });
+            window.location.reload();
+        }
+
+        async function closeTicket() {
+            const comment = document.getElementById('feedbackComment').value;
+            await fetch(`/api/incidents/${ticketId}/feedback`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ rating: selectedRating, comment: comment }),
+            });
+            window.location.reload();
+        }
+
+        async function updateStatus(status) {
+            await fetch(`/api/incidents/${ticketId}`, {
+                method: 'PATCH',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ status: status }),
+            });
+            window.location.reload();
+        }
+    </script>
+</body>
+</html>

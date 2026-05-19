@@ -1,0 +1,104 @@
+name: AI Agent Evaluation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'agents/prompts/**'
+      - 'agents/data/**'
+      - 'evaluation/**'
+  workflow_dispatch:
+
+env:
+  AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
+  AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
+  AZURE_OPENAI_API_VERSION: "2025-01-01-preview"
+  EVAL_MODEL_DEPLOYMENT: "gpt-4.1-mini"
+
+jobs:
+  evaluate:
+    name: Run Agent Evaluation
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r evaluation/requirements.txt
+
+      - name: Generate evaluation dataset
+        run: python evaluation/generate_dataset.py
+
+      - name: Run evaluation
+        run: python evaluation/run_eval.py
+        continue-on-error: true
+        id: eval
+
+      - name: Upload evaluation results
+        uses: actions/upload-artifact@v4
+        with:
+          name: evaluation-results
+          path: |
+            evaluation/eval_results.json
+            evaluation/eval_summary.json
+          retention-days: 30
+
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const summaryPath = './evaluation/eval_summary.json';
+            
+            if (!fs.existsSync(summaryPath)) {
+              console.log('No evaluation summary found');
+              return;
+            }
+            
+            const summary = JSON.parse(fs.readFileSync(summaryPath, 'utf8'));
+            const metrics = summary.metrics;
+            
+            let body = `## 🔍 AI Agent Evaluation Results\n\n`;
+            body += `**Samples evaluated:** ${summary.num_samples}\n\n`;
+            body += `| Metric | Score | Status |\n|--------|-------|--------|\n`;
+            
+            const thresholds = {
+              'classification.classification_accuracy': 0.80,
+              'classification.category_match': 0.85,
+              'classification.language_match': 0.95,
+              'relevance.relevance': 3.0,
+              'coherence.coherence': 3.0,
+            };
+            
+            for (const [key, value] of Object.entries(metrics).sort()) {
+              if (typeof value === 'number') {
+                const threshold = thresholds[key];
+                const status = threshold ? (value >= threshold ? '✅' : '❌') : '➖';
+                body += `| \`${key}\` | ${value.toFixed(4)} | ${status} |\n`;
+              }
+            }
+            
+            body += `\n---\n*Evaluation ran on commit ${context.sha.substring(0, 7)}*`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+      - name: Check quality gates
+        if: steps.eval.outcome == 'failure'
+        run: |
+          echo "::error::Evaluation quality gates failed. See PR comment for details."
+          exit 1

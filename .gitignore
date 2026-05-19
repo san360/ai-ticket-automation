@@ -1,0 +1,41 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Azure Developer CLI
+.azure/
+
+# Environment files
+*.env
+!evaluation/eval_dataset.jsonl
+local.settings.json
+
+# Build outputs
+dist/
+build/
+*.egg-info/
+
+# Evaluation outputs (generated)
+evaluation/eval_results.json
+evaluation/eval_summary.json
+
+# Deployment outputs
+scripts/deployment-outputs.env
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Node modules (Logic Apps)
+node_modules/

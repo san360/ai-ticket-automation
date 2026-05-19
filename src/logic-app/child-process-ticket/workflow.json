@@ -1,0 +1,210 @@
+{
+    "definition": {
+        "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+        "contentVersion": "1.0.0.0",
+        "triggers": {
+            "manual": {
+                "type": "Request",
+                "kind": "Http",
+                "inputs": {
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "id": { "type": "string" },
+                            "number": { "type": "string" },
+                            "subject": { "type": "string" },
+                            "description": { "type": "string" },
+                            "caller_name": { "type": "string" }
+                        }
+                    }
+                }
+            }
+        },
+        "actions": {
+            "Classify_Ticket": {
+                "type": "Http",
+                "runAfter": {},
+                "inputs": {
+                    "method": "POST",
+                    "uri": "@{appsetting('AI_FOUNDRY_ENDPOINT')}/openai/responses?api-version=2025-03-01-preview",
+                    "headers": {
+                        "Content-Type": "application/json"
+                    },
+                    "authentication": {
+                        "type": "ManagedServiceIdentity",
+                        "identity": "@{appsetting('MANAGED_IDENTITY_CLIENT_ID')}",
+                        "audience": "https://cognitiveservices.azure.com"
+                    },
+                    "body": {
+                        "model": "gpt-4.1-mini",
+                        "input": "Classify this HR ticket:\n\nSubject: @{triggerBody()?['subject']}\nDescription: @{triggerBody()?['description']}\nCaller: @{triggerBody()?['caller_name']}",
+                        "instructions": "You are an HR ticket classifier. Use file_search to find relevant context from the vector store, then classify the ticket. Return JSON with: category, subcategory, operatorGroup, language, missingInfo, confidence, confidenceReasoning.",
+                        "tools": [
+                            {
+                                "type": "file_search",
+                                "vector_store_ids": ["@{appsetting('VECTOR_STORE_ID')}"]
+                            }
+                        ],
+                        "text": {
+                            "format": {
+                                "type": "json_object"
+                            }
+                        }
+                    }
+                },
+                "retryPolicy": {
+                    "type": "exponential",
+                    "count": 3,
+                    "interval": "PT10S",
+                    "maximumInterval": "PT1M"
+                }
+            },
+            "Parse_Classification": {
+                "type": "ParseJson",
+                "runAfter": {
+                    "Classify_Ticket": ["Succeeded"]
+                },
+                "inputs": {
+                    "content": "@body('Classify_Ticket')?['output']?[0]?['content']?[0]?['text']",
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "category": { "type": "string" },
+                            "subcategory": { "type": "string" },
+                            "operatorGroup": { "type": "string" },
+                            "language": { "type": "string" },
+                            "missingInfo": { "type": "array", "items": { "type": "string" } },
+                            "confidence": { "type": "number" },
+                            "confidenceReasoning": { "type": "string" }
+                        }
+                    }
+                }
+            },
+            "Generate_Message": {
+                "type": "Http",
+                "runAfter": {
+                    "Parse_Classification": ["Succeeded"]
+                },
+                "inputs": {
+                    "method": "POST",
+                    "uri": "@{appsetting('AI_FOUNDRY_ENDPOINT')}/openai/responses?api-version=2025-03-01-preview",
+                    "headers": {
+                        "Content-Type": "application/json"
+                    },
+                    "authentication": {
+                        "type": "ManagedServiceIdentity",
+                        "identity": "@{appsetting('MANAGED_IDENTITY_CLIENT_ID')}",
+                        "audience": "https://cognitiveservices.azure.com"
+                    },
+                    "body": {
+                        "model": "gpt-4.1-mini",
+                        "input": "Generate HR message for this classified ticket:\n\nOriginal Ticket:\nSubject: @{triggerBody()?['subject']}\nDescription: @{triggerBody()?['description']}\n\nClassification:\nCategory: @{body('Parse_Classification')?['category']}\nSubcategory: @{body('Parse_Classification')?['subcategory']}\nLanguage: @{body('Parse_Classification')?['language']}\nMissing Info: @{join(body('Parse_Classification')?['missingInfo'], ', ')}",
+                        "instructions": "You are an HR communication specialist. Generate a professional response. If missingInfo is empty, confirm processing (Scenario A). If missingInfo is non-empty, request the missing items (Scenario B). Return JSON with: hrSummary, employeeMessage, scenario.",
+                        "text": {
+                            "format": {
+                                "type": "json_object"
+                            }
+                        }
+                    }
+                },
+                "retryPolicy": {
+                    "type": "exponential",
+                    "count": 3,
+                    "interval": "PT10S",
+                    "maximumInterval": "PT1M"
+                }
+            },
+            "Parse_Message": {
+                "type": "ParseJson",
+                "runAfter": {
+                    "Generate_Message": ["Succeeded"]
+                },
+                "inputs": {
+                    "content": "@body('Generate_Message')?['output']?[0]?['content']?[0]?['text']",
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "hrSummary": { "type": "string" },
+                            "employeeMessage": { "type": "string" },
+                            "scenario": { "type": "string" }
+                        }
+                    }
+                }
+            },
+            "Write_Classification_to_TOPdesk": {
+                "type": "Http",
+                "runAfter": {
+                    "Parse_Message": ["Succeeded"]
+                },
+                "inputs": {
+                    "method": "PATCH",
+                    "uri": "@{appsetting('TOPDESK_BASE_URL')}/api/incidents/@{triggerBody()?['id']}",
+                    "headers": {
+                        "Content-Type": "application/json"
+                    },
+                    "body": {
+                        "status": "processed_by_ai",
+                        "category": "@{body('Parse_Classification')?['category']}",
+                        "subcategory": "@{body('Parse_Classification')?['subcategory']}",
+                        "operator_group": "@{body('Parse_Classification')?['operatorGroup']}",
+                        "language": "@{body('Parse_Classification')?['language']}",
+                        "confidence": "@{body('Parse_Classification')?['confidence']}",
+                        "missing_info": "@body('Parse_Classification')?['missingInfo']"
+                    }
+                }
+            },
+            "Post_HR_Summary_Internal_Note": {
+                "type": "Http",
+                "runAfter": {
+                    "Write_Classification_to_TOPdesk": ["Succeeded"]
+                },
+                "inputs": {
+                    "method": "POST",
+                    "uri": "@{appsetting('TOPDESK_BASE_URL')}/api/incidents/@{triggerBody()?['id']}/actions",
+                    "headers": {
+                        "Content-Type": "application/json"
+                    },
+                    "body": {
+                        "text": "@{body('Parse_Message')?['hrSummary']}",
+                        "author": "AI Classifier",
+                        "is_internal": true
+                    }
+                }
+            },
+            "Post_Employee_Message": {
+                "type": "Http",
+                "runAfter": {
+                    "Post_HR_Summary_Internal_Note": ["Succeeded"]
+                },
+                "inputs": {
+                    "method": "POST",
+                    "uri": "@{appsetting('TOPDESK_BASE_URL')}/api/incidents/@{triggerBody()?['id']}/actions",
+                    "headers": {
+                        "Content-Type": "application/json"
+                    },
+                    "body": {
+                        "text": "@{body('Parse_Message')?['employeeMessage']}",
+                        "author": "HR Assistant",
+                        "is_internal": false
+                    }
+                }
+            },
+            "Response": {
+                "type": "Response",
+                "runAfter": {
+                    "Post_Employee_Message": ["Succeeded"]
+                },
+                "inputs": {
+                    "statusCode": 200,
+                    "body": {
+                        "status": "processed",
+                        "ticketId": "@{triggerBody()?['id']}",
+                        "classification": "@body('Parse_Classification')",
+                        "message": "@body('Parse_Message')"
+                    }
+                }
+            }
+        }
+    },
+    "kind": "Stateful"
+}

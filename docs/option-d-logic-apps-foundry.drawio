@@ -1,0 +1,278 @@
+<mxfile host="65bd71144e" pages="1">
+    <diagram id="option-d-alt" name="Option D — Logic Apps + Foundry Agents (Parent-Child)">
+        <mxGraphModel dx="879" dy="668" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1100" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="title" value="Option D: Logic Apps (Parent–Child) + Foundry Agents — Responses API" style="text;html=1;fontSize=20;fontStyle=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;fontColor=#333333;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="15" width="900" height="35" as="geometry"/>
+                </mxCell>
+                <mxCell id="subtitle" value="Parent workflow: scheduled, polls TOPdesk for open tickets, iterates For Each → calls child workflow. Child workflow: calls Classifier Agent + Message Agent (Responses API) → updates TOPdesk. No Table Storage. No DLQ." style="text;html=1;fontSize=11;fontStyle=2;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;fontColor=#666666;whiteSpace=wrap;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="48" width="1300" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="topdesk" value="TOPdesk SaaS&#xa;Incident API v4.2.4" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#616161;fontColor=#FFFFFF;strokeColor=none;fontSize=11;fontStyle=1;arcSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="20" y="310" width="160" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="la_boundary" value="Logic Apps Standard (WS1) — Switzerland North" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F0FE;strokeColor=#4285F4;strokeWidth=2;dashed=1;verticalAlign=top;fontStyle=1;fontSize=13;arcSize=5;" parent="1" vertex="1">
+                    <mxGeometry x="230" y="80" width="1330" height="480" as="geometry"/>
+                </mxCell>
+                <mxCell id="la_status" value="✅ All GA — no agent loop" style="text;html=1;fontSize=10;fontStyle=0;fillColor=#E6F4EA;strokeColor=#34A853;align=center;verticalAlign=middle;rounded=1;" parent="1" vertex="1">
+                    <mxGeometry x="1380" y="88" width="155" height="22" as="geometry"/>
+                </mxCell>
+                <mxCell id="parent_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E6F3FF;strokeColor=#0078D4;strokeWidth=2;arcSize=5;" parent="1" vertex="1">
+                    <mxGeometry x="260" y="120" width="1270" height="140" as="geometry"/>
+                </mxCell>
+                <mxCell id="parent_label" value="Parent Workflow — Scheduler &amp; Iterator" style="text;html=1;fontSize=13;fontStyle=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;fontColor=#0078D4;" parent="1" vertex="1">
+                    <mxGeometry x="280" y="125" width="400" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="p_recurrence" value="⏱ Recurrence&#xa;(Scheduled)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E6F4EA;strokeColor=#34A853;strokeWidth=1;fontSize=10;fontStyle=1;arcSize=15;" parent="1" vertex="1">
+                    <mxGeometry x="290" y="170" width="120" height="45" as="geometry"/>
+                </mxCell>
+                <mxCell id="p_poll" value="HTTP GET&#xa;Poll TOPdesk&#xa;status=open" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#616161;strokeWidth=1;fontSize=10;arcSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="450" y="165" width="130" height="55" as="geometry"/>
+                </mxCell>
+                <mxCell id="p_filter_note" value="Filter: status == &quot;open&quot;&#xa;(no watermark needed)" style="text;html=1;fontSize=9;fontStyle=2;fillColor=none;strokeColor=none;fontColor=#616161;" parent="1" vertex="1">
+                    <mxGeometry x="445" y="222" width="140" height="28" as="geometry"/>
+                </mxCell>
+                <mxCell id="p_foreach" value="For Each&#xa;Ticket" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#E65100;strokeWidth=2;fontSize=11;fontStyle=1;arcSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="630" y="170" width="100" height="45" as="geometry"/>
+                </mxCell>
+                <mxCell id="p_call_child" value="📞 Call Child Workflow&#xa;(pass ticket payload)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0078D4;fontColor=#FFFFFF;strokeColor=none;fontSize=10;fontStyle=1;arcSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="790" y="165" width="170" height="55" as="geometry"/>
+                </mxCell>
+                <mxCell id="p_call_note" value="&quot;Call workflow in this logic app&quot; (GA)" style="text;html=1;fontSize=9;fontStyle=2;fillColor=none;strokeColor=none;fontColor=#0078D4;" parent="1" vertex="1">
+                    <mxGeometry x="785" y="222" width="200" height="18" as="geometry"/>
+                </mxCell>
+                <mxCell id="pe1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#34A853;strokeWidth=2;endArrow=blockThin;endFill=1;" parent="1" source="p_recurrence" target="p_poll" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="pe2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#0078D4;strokeWidth=1.5;endArrow=blockThin;endFill=1;" parent="1" source="p_poll" target="p_foreach" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="pe3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#E65100;strokeWidth=1.5;endArrow=blockThin;endFill=1;" parent="1" source="p_foreach" target="p_call_child" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="pe_topdesk" value="GET /incidents?status=open" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#616161;strokeWidth=1.5;endArrow=blockThin;endFill=1;fontSize=9;fontColor=#333333;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="p_poll" target="topdesk" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="210" y="192"/>
+                            <mxPoint x="210" y="340"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="child_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF8F0;strokeColor=#FF8C00;strokeWidth=2;arcSize=5;" parent="1" vertex="1">
+                    <mxGeometry x="260" y="295" width="1270" height="245" as="geometry"/>
+                </mxCell>
+                <mxCell id="child_label" value="Child Workflow — Per-Ticket Processing" style="text;html=1;fontSize=13;fontStyle=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;fontColor=#FF8C00;" parent="1" vertex="1">
+                    <mxGeometry x="280" y="300" width="400" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="c_trigger" value="Request Trigger&#xa;(from Parent)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E6F4EA;strokeColor=#34A853;strokeWidth=1;fontSize=10;fontStyle=1;arcSize=15;" parent="1" vertex="1">
+                    <mxGeometry x="290" y="345" width="120" height="45" as="geometry"/>
+                </mxCell>
+                <mxCell id="c_classify" value="HTTP POST&#xa;Foundry Classifier-Agent&#xa;(Responses API)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF8C00;fontColor=#FFFFFF;strokeColor=none;fontSize=10;fontStyle=1;arcSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="440" y="340" width="170" height="55" as="geometry"/>
+                </mxCell>
+                <mxCell id="c_parse1" value="Parse JSON&#xa;Classification" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#0078D4;strokeWidth=1;fontSize=10;arcSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="640" y="345" width="110" height="45" as="geometry"/>
+                </mxCell>
+                <mxCell id="c_message" value="HTTP POST&#xa;Foundry Message-Agent&#xa;(Responses API)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#008000;fontColor=#FFFFFF;strokeColor=none;fontSize=10;fontStyle=1;arcSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="780" y="340" width="170" height="55" as="geometry"/>
+                </mxCell>
+                <mxCell id="c_parse2" value="Parse JSON&#xa;Message" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#0078D4;strokeWidth=1;fontSize=10;arcSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="980" y="345" width="100" height="45" as="geometry"/>
+                </mxCell>
+                <mxCell id="c_patch" value="HTTP PATCH&#xa;Write Classification&#xa;to TOPdesk" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#616161;strokeWidth=1;fontSize=10;arcSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="440" y="440" width="150" height="55" as="geometry"/>
+                </mxCell>
+                <mxCell id="c_action" value="HTTP POST&#xa;Post Action Note&#xa;to TOPdesk" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#616161;strokeWidth=1;fontSize=10;arcSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="640" y="440" width="150" height="55" as="geometry"/>
+                </mxCell>
+                <mxCell id="c_response" value="Response&#xa;(200 OK)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E6F4EA;strokeColor=#34A853;strokeWidth=1;fontSize=10;fontStyle=1;arcSize=15;" parent="1" vertex="1">
+                    <mxGeometry x="840" y="448" width="110" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="ce1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#34A853;strokeWidth=1.5;endArrow=blockThin;endFill=1;" parent="1" source="c_trigger" target="c_classify" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="ce2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#FF8C00;strokeWidth=2;endArrow=blockThin;endFill=1;" parent="1" source="c_classify" target="c_parse1" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="ce3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#0078D4;strokeWidth=1.5;endArrow=blockThin;endFill=1;" parent="1" source="c_parse1" target="c_message" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="ce4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#008000;strokeWidth=2;endArrow=blockThin;endFill=1;" parent="1" source="c_message" target="c_parse2" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="ce5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#616161;strokeWidth=1.5;endArrow=blockThin;endFill=1;" parent="1" source="c_parse2" target="c_patch" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="1030" y="415"/>
+                            <mxPoint x="515" y="415"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="ce6" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#616161;strokeWidth=1.5;endArrow=blockThin;endFill=1;" parent="1" source="c_patch" target="c_action" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="ce7" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#34A853;strokeWidth=1.5;endArrow=blockThin;endFill=1;" parent="1" source="c_action" target="c_response" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="ce_topdesk_patch" value="PATCH + POST" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#616161;strokeWidth=1.5;endArrow=blockThin;endFill=1;fontSize=9;fontColor=#333333;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="c_patch" target="topdesk" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="210" y="467"/>
+                            <mxPoint x="210" y="340"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e_parent_child" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#0078D4;strokeWidth=2;endArrow=blockThin;endFill=1;dashed=1;dashPattern=5 5;" parent="1" source="p_call_child" target="c_trigger" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="875" y="260"/>
+                            <mxPoint x="350" y="260"/>
+                            <mxPoint x="350" y="345"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="foundry_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E8FF;strokeColor=#7B2FF7;strokeWidth=2;arcSize=5;" parent="1" vertex="1">
+                    <mxGeometry x="230" y="610" width="1080" height="280" as="geometry"/>
+                </mxCell>
+                <mxCell id="foundry_label" value="Microsoft Foundry — AI Agent Service (Responses API)" style="text;html=1;fontSize=14;fontStyle=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;fontColor=#7B2FF7;" parent="1" vertex="1">
+                    <mxGeometry x="250" y="615" width="500" height="28" as="geometry"/>
+                </mxCell>
+                <mxCell id="foundry_status" value="Existing prototype — reused" style="text;html=1;fontSize=10;fontStyle=0;fillColor=#F3E8FF;strokeColor=#7B2FF7;align=center;verticalAlign=middle;rounded=1;" parent="1" vertex="1">
+                    <mxGeometry x="1100" y="618" width="170" height="22" as="geometry"/>
+                </mxCell>
+                <mxCell id="agent_a_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF8F0;strokeColor=#FF8C00;strokeWidth=2;arcSize=8;" parent="1" vertex="1">
+                    <mxGeometry x="260" y="660" width="470" height="200" as="geometry"/>
+                </mxCell>
+                <mxCell id="agent_a_label" value="Classifier-Agent (gpt-4.1-mini)" style="text;html=1;fontSize=12;fontStyle=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;fontColor=#FF8C00;" parent="1" vertex="1">
+                    <mxGeometry x="280" y="665" width="280" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="agent_a_desc" value="• Assigns category &amp; subcategory from taxonomy&#xa;• Identifies correct operator group&#xa;• Detects ticket language (DE/FR/IT/EN)&#xa;• Flags missing required info*" style="text;html=1;fontSize=9;fontStyle=2;fillColor=none;strokeColor=none;fontColor=#555555;whiteSpace=wrap;align=left;" parent="1" vertex="1">
+                    <mxGeometry x="280" y="690" width="250" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="agent_a_model" value="🤖 LLM&#xa;gpt-4.1-mini" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0078D4;fontColor=#FFFFFF;strokeColor=none;fontSize=10;fontStyle=1;arcSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="290" y="735" width="110" height="45" as="geometry"/>
+                </mxCell>
+                <mxCell id="agent_a_tool" value="🔍 File Search&#xa;• Sample Incidents&#xa;• Category Taxonomy&#xa;• Operator Group IDs" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#7B2FF7;strokeWidth=1;fontSize=9;fontStyle=1;arcSize=10;align=left;spacingLeft=8;" parent="1" vertex="1">
+                    <mxGeometry x="420" y="735" width="160" height="55" as="geometry"/>
+                </mxCell>
+                <mxCell id="agent_a_output" value="Output JSON:&#xa;{ category, subcategory,&#xa;operatorGroup, language,&#xa;missingInfo[] }" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#34A853;strokeWidth=1;fontSize=9;arcSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="290" y="795" width="200" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="agent_a_note" value="*Missing info = requirements per category&#xa;(e.g. sick leave → doctor&#39;s certificate).&#xa;List provided in Vector Store context." style="text;html=1;fontSize=8;fontStyle=2;fillColor=none;strokeColor=none;fontColor=#999999;whiteSpace=wrap;align=left;" vertex="1" parent="1">
+                    <mxGeometry x="500" y="800" width="220" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="agent_b_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0FFF0;strokeColor=#008000;strokeWidth=2;arcSize=8;" parent="1" vertex="1">
+                    <mxGeometry x="770" y="660" width="500" height="200" as="geometry"/>
+                </mxCell>
+                <mxCell id="agent_b_label" value="Message-Agent (gpt-4.1-mini)" style="text;html=1;fontSize=12;fontStyle=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;fontColor=#008000;" parent="1" vertex="1">
+                    <mxGeometry x="790" y="665" width="280" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="agent_b_desc" value="• Generates HR summary in English&#xa;• Generates employee message in ticket lang. + EN&#xa;• Scenario A: confirms ticket processing&#xa;• Scenario B: requests specific missing field" style="text;html=1;fontSize=9;fontStyle=2;fillColor=none;strokeColor=none;fontColor=#555555;whiteSpace=wrap;align=left;" parent="1" vertex="1">
+                    <mxGeometry x="790" y="690" width="290" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="agent_b_model" value="🤖 LLM&#xa;gpt-4.1-mini" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0078D4;fontColor=#FFFFFF;strokeColor=none;fontSize=10;fontStyle=1;arcSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="800" y="735" width="110" height="45" as="geometry"/>
+                </mxCell>
+                <mxCell id="agent_b_instructions" value="Instructions-only&#xa;(no tools)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#008000;strokeWidth=1;fontSize=9;fontStyle=2;arcSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="930" y="735" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="agent_b_output" value="Output JSON:&#xa;{ hrSummary,&#xa;employeeMessage,&#xa;scenario: A|B }" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#34A853;strokeWidth=1;fontSize=9;arcSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="800" y="795" width="170" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="vs" value="📁 Vector Store&#xa;HR Policies, Category Taxonomy,&#xa;Response Templates&#xa;(auto-chunked &amp; embedded)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#7B2FF7;fontColor=#FFFFFF;strokeColor=none;fontSize=10;fontStyle=1;arcSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="545" y="795" width="210" height="65" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_vs_a" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#7B2FF7;strokeWidth=1.5;endArrow=blockThin;endFill=1;" parent="1" source="agent_a_tool" target="vs" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_foundry_a" value="POST /responses" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#FF8C00;strokeWidth=2;endArrow=blockThin;endFill=1;fontSize=9;fontColor=#FF8C00;" parent="1" source="c_classify" target="agent_a_box" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="525" y="580"/>
+                            <mxPoint x="495" y="580"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e_foundry_b" value="POST /responses" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#008000;strokeWidth=2;endArrow=blockThin;endFill=1;fontSize=9;fontColor=#008000;" parent="1" source="c_message" target="agent_b_box" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="865" y="580"/>
+                            <mxPoint x="1020" y="580"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="kv" value="Key Vault&#xa;TOPdesk API Creds&#xa;+ Foundry Key" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF8C00;fontColor=#FFFFFF;strokeColor=none;fontSize=10;fontStyle=1;arcSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="1370" y="180" width="170" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="legend_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F9F9F9;strokeColor=#CCCCCC;strokeWidth=1;arcSize=5;" parent="1" vertex="1">
+                    <mxGeometry x="230" y="920" width="780" height="170" as="geometry"/>
+                </mxCell>
+                <mxCell id="legend_title" value="Architecture Notes" style="text;html=1;fontSize=12;fontStyle=1;fillColor=none;strokeColor=none;align=left;fontColor=#333333;" parent="1" vertex="1">
+                    <mxGeometry x="245" y="925" width="200" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="legend_content" value="• Parent workflow: Scheduled → polls TOPdesk for open tickets (status=open) → For Each → calls child workflow&#xa;• Child workflow: Request trigger → Classifier Agent → Parse → Message Agent → Parse → PATCH TOPdesk → POST action → Response&#xa;• No Table Storage / watermark — TOPdesk status column = the state machine (open → processed)&#xa;• No DLQ — child workflow failures visible in run history; retried via Logic Apps built-in retry policies&#xa;• Responses API: Single POST call per agent, synchronous response — no thread/run/poll loop needed&#xa;• Classifier-Agent uses File Search tool (Vector Store with HR policies + taxonomy)&#xa;• Message-Agent: instructions-only (no tools) — generates HR summary (EN) + employee message (ticket lang. + EN)&#xa;• TOPdesk write-back: child workflow PATCH classification + POST action note after both agents complete" style="text;html=1;fontSize=10;fontStyle=0;fillColor=none;strokeColor=none;align=left;verticalAlign=top;fontColor=#555555;whiteSpace=wrap;" parent="1" vertex="1">
+                    <mxGeometry x="245" y="950" width="740" height="130" as="geometry"/>
+                </mxCell>
+                <mxCell id="badge_1" value="Logic Apps: All GA ✅" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E6F4EA;strokeColor=#34A853;fontSize=10;fontStyle=1;arcSize=15;" parent="1" vertex="1">
+                    <mxGeometry x="1050" y="930" width="145" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="badge_2" value="No Agent Loop" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#E65100;fontSize=10;fontStyle=1;arcSize=15;" parent="1" vertex="1">
+                    <mxGeometry x="1210" y="930" width="120" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="badge_3" value="Responses API" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E8FF;strokeColor=#7B2FF7;fontSize=10;fontStyle=1;arcSize=15;" parent="1" vertex="1">
+                    <mxGeometry x="1050" y="970" width="120" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="badge_4" value="No Table Storage" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#E65100;fontSize=10;fontStyle=1;arcSize=15;" parent="1" vertex="1">
+                    <mxGeometry x="1185" y="970" width="130" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="badge_5" value="Parent–Child pattern" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F0FE;strokeColor=#4285F4;fontSize=10;fontStyle=1;arcSize=15;" parent="1" vertex="1">
+                    <mxGeometry x="1050" y="1010" width="150" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="badge_6" value="No DLQ" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#E65100;fontSize=10;fontStyle=1;arcSize=15;" parent="1" vertex="1">
+                    <mxGeometry x="1215" y="1010" width="80" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="cl_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F9F9F9;strokeColor=#CCCCCC;strokeWidth=1;arcSize=5;" parent="1" vertex="1">
+                    <mxGeometry x="230" y="1095" width="700" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="cl1" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E6F3FF;strokeColor=#0078D4;strokeWidth=1;" parent="1" vertex="1">
+                    <mxGeometry x="245" y="1102" width="16" height="16" as="geometry"/>
+                </mxCell>
+                <mxCell id="cl1t" value="Parent WF" style="text;html=1;fontSize=9;fillColor=none;strokeColor=none;fontColor=#333333;" parent="1" vertex="1">
+                    <mxGeometry x="264" y="1100" width="60" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="cl2" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF8F0;strokeColor=#FF8C00;strokeWidth=1;" parent="1" vertex="1">
+                    <mxGeometry x="335" y="1102" width="16" height="16" as="geometry"/>
+                </mxCell>
+                <mxCell id="cl2t" value="Child WF" style="text;html=1;fontSize=9;fillColor=none;strokeColor=none;fontColor=#333333;" parent="1" vertex="1">
+                    <mxGeometry x="354" y="1100" width="55" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="cl3" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E8FF;strokeColor=#7B2FF7;strokeWidth=1;" parent="1" vertex="1">
+                    <mxGeometry x="420" y="1102" width="16" height="16" as="geometry"/>
+                </mxCell>
+                <mxCell id="cl3t" value="Foundry" style="text;html=1;fontSize=9;fillColor=none;strokeColor=none;fontColor=#333333;" parent="1" vertex="1">
+                    <mxGeometry x="439" y="1100" width="50" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="cl4" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF8C00;strokeColor=none;" parent="1" vertex="1">
+                    <mxGeometry x="500" y="1102" width="16" height="16" as="geometry"/>
+                </mxCell>
+                <mxCell id="cl4t" value="Classifier" style="text;html=1;fontSize=9;fillColor=none;strokeColor=none;fontColor=#333333;" parent="1" vertex="1">
+                    <mxGeometry x="519" y="1100" width="55" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="cl5" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#008000;strokeColor=none;" parent="1" vertex="1">
+                    <mxGeometry x="585" y="1102" width="16" height="16" as="geometry"/>
+                </mxCell>
+                <mxCell id="cl5t" value="Message" style="text;html=1;fontSize=9;fillColor=none;strokeColor=none;fontColor=#333333;" parent="1" vertex="1">
+                    <mxGeometry x="604" y="1100" width="50" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="cl6" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#616161;strokeColor=none;" parent="1" vertex="1">
+                    <mxGeometry x="665" y="1102" width="16" height="16" as="geometry"/>
+                </mxCell>
+                <mxCell id="cl6t" value="TOPdesk" style="text;html=1;fontSize=9;fillColor=none;strokeColor=none;fontColor=#333333;" parent="1" vertex="1">
+                    <mxGeometry x="684" y="1100" width="50" height="20" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

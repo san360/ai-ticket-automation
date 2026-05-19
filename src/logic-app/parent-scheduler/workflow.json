@@ -1,0 +1,74 @@
+{
+    "definition": {
+        "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+        "contentVersion": "1.0.0.0",
+        "triggers": {
+            "Recurrence": {
+                "type": "Recurrence",
+                "recurrence": {
+                    "frequency": "Minute",
+                    "interval": 5
+                }
+            }
+        },
+        "actions": {
+            "HTTP_GET_Open_Tickets": {
+                "type": "Http",
+                "runAfter": {},
+                "inputs": {
+                    "method": "GET",
+                    "uri": "@{appsetting('TOPDESK_BASE_URL')}/api/incidents?status=open",
+                    "headers": {
+                        "Content-Type": "application/json"
+                    }
+                }
+            },
+            "Parse_Tickets_Response": {
+                "type": "ParseJson",
+                "runAfter": {
+                    "HTTP_GET_Open_Tickets": ["Succeeded"]
+                },
+                "inputs": {
+                    "content": "@body('HTTP_GET_Open_Tickets')",
+                    "schema": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": { "type": "string" },
+                                "number": { "type": "string" },
+                                "subject": { "type": "string" },
+                                "description": { "type": "string" },
+                                "status": { "type": "string" },
+                                "caller_name": { "type": "string" },
+                                "created_at": { "type": "string" }
+                            }
+                        }
+                    }
+                }
+            },
+            "For_Each_Ticket": {
+                "type": "Foreach",
+                "runAfter": {
+                    "Parse_Tickets_Response": ["Succeeded"]
+                },
+                "foreach": "@body('Parse_Tickets_Response')",
+                "actions": {
+                    "Call_Child_Workflow": {
+                        "type": "Workflow",
+                        "inputs": {
+                            "host": {
+                                "workflow": {
+                                    "id": "child-process-ticket"
+                                }
+                            },
+                            "body": "@items('For_Each_Ticket')"
+                        }
+                    }
+                },
+                "operationOptions": "Sequential"
+            }
+        }
+    },
+    "kind": "Stateful"
+}

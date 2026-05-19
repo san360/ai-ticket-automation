@@ -1,0 +1,16 @@
+name: ai-ticket-automation
+metadata:
+  template: ai-ticket-automation@0.0.1
+services:
+  topdesk-simulator:
+    project: ./src/topdesk-simulator
+    host: containerapp
+    language: python
+    docker:
+      path: ./src/topdesk-simulator/Dockerfile
+hooks:
+  postprovision:
+    shell: pwsh
+    run: ./scripts/post-provision.ps1
+    interactive: true
+    continueOnError: false

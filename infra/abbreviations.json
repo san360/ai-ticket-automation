@@ -1,0 +1,13 @@
+{
+  "resourceGroup": "rg-",
+  "managedIdentity": "id-",
+  "keyVault": "kv-",
+  "aiFoundry": "ai-",
+  "logicApp": "logic-",
+  "containerApp": "ca-",
+  "storageAccount": "st",
+  "appServicePlan": "asp-",
+  "containerRegistry": "cr",
+  "containerAppsEnvironment": "cae-",
+  "logAnalyticsWorkspace": "log-"
+}
