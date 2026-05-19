@@ -4,6 +4,14 @@ This data is used to populate the database on startup and on reset.
 It is immutable — always returns a fresh list of ticket dicts.
 """
 
+from attachment_data import (
+    VALID_DOCTOR_NOTE_PDF,
+    INVALID_RECEIPT_IMAGE,
+    VALID_DOCTOR_NOTE_IMAGE,
+    MISMATCHED_NAME_CERTIFICATE,
+    EXPIRED_CERTIFICATE,
+)
+
 SEED_TICKETS: list[dict] = [
     {
         "subject": "Krankmeldung ab Montag",
@@ -13,6 +21,7 @@ SEED_TICKETS: list[dict] = [
             "Voraussichtlich bin ich bis Freitag abwesend."
         ),
         "caller_name": "Anna Müller",
+        "attachments": [VALID_DOCTOR_NOTE_PDF],
     },
     {
         "subject": "Changement d'adresse",
@@ -108,5 +117,45 @@ SEED_TICKETS: list[dict] = [
             "the company for 4 years in the Marketing department."
         ),
         "caller_name": "David Chen",
+    },
+    # --- Attachment scenario: valid doctor note (image scan) ---
+    {
+        "subject": "Maladie - certificat médical joint",
+        "description": (
+            "Bonjour, je suis malade depuis lundi et ne peux pas travailler cette semaine. "
+            "Veuillez trouver ci-joint mon certificat médical scanné."
+        ),
+        "caller_name": "Lucas Martin",
+        "attachments": [VALID_DOCTOR_NOTE_IMAGE],
+    },
+    # --- Attachment scenario: INVALID - wrong document type (grocery receipt) ---
+    {
+        "subject": "Krankmeldung - Beleg anbei",
+        "description": (
+            "Hallo, ich bin krank und habe den Beleg angehängt. "
+            "Bitte entschuldigen Sie meine Abwesenheit diese Woche."
+        ),
+        "caller_name": "Felix Bauer",
+        "attachments": [INVALID_RECEIPT_IMAGE],
+    },
+    # --- Attachment scenario: INVALID - patient name mismatch ---
+    {
+        "subject": "Sick leave notification with certificate",
+        "description": (
+            "Hi HR, I'm not feeling well and need to take sick leave. "
+            "Attached is my medical certificate. I expect to be back next Monday."
+        ),
+        "caller_name": "Elena Kowalski",
+        "attachments": [MISMATCHED_NAME_CERTIFICATE],
+    },
+    # --- Attachment scenario: INVALID - expired/old certificate ---
+    {
+        "subject": "Krankmeldung - Arztzeugnis beigelegt",
+        "description": (
+            "Guten Tag, ich bin diese Woche krank. Anbei finden Sie mein Arztzeugnis. "
+            "Ich hoffe, nächste Woche wieder fit zu sein."
+        ),
+        "caller_name": "Thomas Weber",
+        "attachments": [EXPIRED_CERTIFICATE],
     },
 ]

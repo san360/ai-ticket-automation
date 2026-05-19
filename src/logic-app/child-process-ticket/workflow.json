@@ -14,7 +14,8 @@
                             "number": { "type": "string" },
                             "subject": { "type": "string" },
                             "description": { "type": "string" },
-                            "caller_name": { "type": "string" }
+                            "caller_name": { "type": "string" },
+                            "attachments": { "type": "array" }
                         }
                     }
                 }
@@ -26,19 +27,32 @@
                 "runAfter": {},
                 "inputs": {
                     "method": "POST",
-                    "uri": "@{appsetting('AI_FOUNDRY_ENDPOINT')}/openai/responses?api-version=2025-03-01-preview",
+                    "uri": "@{appsetting('AI_FOUNDRY_ENDPOINT')}/openai/v1/responses",
                     "headers": {
                         "Content-Type": "application/json"
                     },
                     "authentication": {
                         "type": "ManagedServiceIdentity",
-                        "identity": "@{appsetting('MANAGED_IDENTITY_CLIENT_ID')}",
-                        "audience": "https://cognitiveservices.azure.com"
+                        "identity": "@{appsetting('MANAGED_IDENTITY_RESOURCE_ID')}",
+                        "audience": "https://ai.azure.com"
                     },
                     "body": {
-                        "model": "gpt-4.1-mini",
-                        "agent_id": "@{appsetting('CLASSIFIER_AGENT_ID')}",
-                        "input": "Classify this HR ticket:\n\nSubject: @{triggerBody()?['subject']}\nDescription: @{triggerBody()?['description']}\nCaller: @{triggerBody()?['caller_name']}"
+                        "agent_reference": {
+                            "type": "agent_reference",
+                            "name": "@{appsetting('CLASSIFIER_AGENT_NAME')}"
+                        },
+                        "input": [
+                            {
+                                "type": "message",
+                                "role": "user",
+                                "content": [
+                                    {
+                                        "type": "input_text",
+                                        "text": "Classify this HR ticket:\n\nSubject: @{triggerBody()?['subject']}\nDescription: @{triggerBody()?['description']}\nCaller: @{triggerBody()?['caller_name']}"
+                                    }
+                                ]
+                            }
+                        ]
                     }
                 },
                 "retryPolicy": {
@@ -54,7 +68,7 @@
                     "Classify_Ticket": ["Succeeded"]
                 },
                 "inputs": {
-                    "content": "@body('Classify_Ticket')?['output']?[0]?['content']?[0]?['text']",
+                    "content": "@{trim(replace(replace(last(body('Classify_Ticket')?['output'])?['content']?[0]?['text'], '```json', ''), '```', ''))}",
                     "schema": {
                         "type": "object",
                         "properties": {
@@ -69,26 +83,154 @@
                     }
                 }
             },
-            "Generate_Message": {
-                "type": "Http",
+            "Check_Has_Attachments": {
+                "type": "If",
                 "runAfter": {
                     "Parse_Classification": ["Succeeded"]
                 },
+                "expression": {
+                    "and": [
+                        {
+                            "greater": [
+                                "@length(coalesce(triggerBody()?['attachments'], json('[]')))",
+                                0
+                            ]
+                        }
+                    ]
+                },
+                "actions": {
+                    "Analyze_Document": {
+                        "type": "Http",
+                        "runAfter": {},
+                        "inputs": {
+                            "method": "POST",
+                            "uri": "@{appsetting('AI_FOUNDRY_ENDPOINT')}/openai/v1/responses",
+                            "headers": {
+                                "Content-Type": "application/json"
+                            },
+                            "authentication": {
+                                "type": "ManagedServiceIdentity",
+                                "identity": "@{appsetting('MANAGED_IDENTITY_RESOURCE_ID')}",
+                                "audience": "https://ai.azure.com"
+                            },
+                            "body": {
+                                "agent_reference": {
+                                    "type": "agent_reference",
+                                    "name": "@{appsetting('DOCUMENT_AGENT_NAME')}"
+                                },
+                                "input": [
+                                    {
+                                        "type": "message",
+                                        "role": "user",
+                                        "content": [
+                                            {
+                                                "type": "input_text",
+                                                "text": "Analyze this document attached to an HR ticket.\n\nTicket Context:\nSubject: @{triggerBody()?['subject']}\nCaller Name: @{triggerBody()?['caller_name']}\nCategory: @{body('Parse_Classification')?['category']}\nSubcategory: @{body('Parse_Classification')?['subcategory']}\n\nAttachment Details:\nFilename: @{first(triggerBody()?['attachments'])?['filename']}\nContent Type: @{first(triggerBody()?['attachments'])?['content_type']}\n\nExtracted Document Text:\n@{first(triggerBody()?['attachments'])?['extracted_text']}"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        "retryPolicy": {
+                            "type": "exponential",
+                            "count": 3,
+                            "interval": "PT10S",
+                            "maximumInterval": "PT1M"
+                        }
+                    },
+                    "Parse_Document_Analysis": {
+                        "type": "ParseJson",
+                        "runAfter": {
+                            "Analyze_Document": ["Succeeded"]
+                        },
+                        "inputs": {
+                            "content": "@{trim(replace(replace(last(body('Analyze_Document')?['output'])?['content']?[0]?['text'], '```json', ''), '```', ''))}",
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "documentValid": { "type": "boolean" },
+                                    "documentType": { "type": "string" },
+                                    "concerns": { "type": "array", "items": { "type": "string" } },
+                                    "extractedInfo": { "type": "object" },
+                                    "recommendation": { "type": "string" },
+                                    "reasoningSummary": { "type": "string" }
+                                }
+                            }
+                        }
+                    },
+                    "Write_Attachment_Analysis": {
+                        "type": "Http",
+                        "runAfter": {
+                            "Parse_Document_Analysis": ["Succeeded"]
+                        },
+                        "inputs": {
+                            "method": "PATCH",
+                            "uri": "@{appsetting('SERVICEDESK_BASE_URL')}/api/incidents/@{triggerBody()?['id']}",
+                            "headers": {
+                                "Content-Type": "application/json"
+                            },
+                            "body": {
+                                "attachment_analysis": "@body('Parse_Document_Analysis')"
+                            }
+                        }
+                    },
+                    "Post_Document_Analysis_Note": {
+                        "type": "Http",
+                        "runAfter": {
+                            "Write_Attachment_Analysis": ["Succeeded"]
+                        },
+                        "inputs": {
+                            "method": "POST",
+                            "uri": "@{appsetting('SERVICEDESK_BASE_URL')}/api/incidents/@{triggerBody()?['id']}/actions",
+                            "headers": {
+                                "Content-Type": "application/json"
+                            },
+                            "body": {
+                                "text": "[Document Analysis] File: @{first(triggerBody()?['attachments'])?['filename']}\nValid: @{body('Parse_Document_Analysis')?['documentValid']}\nType: @{body('Parse_Document_Analysis')?['documentType']}\nRecommendation: @{body('Parse_Document_Analysis')?['recommendation']}\nConcerns: @{join(body('Parse_Document_Analysis')?['concerns'], '; ')}\nSummary: @{body('Parse_Document_Analysis')?['reasoningSummary']}",
+                                "author": "AI Document Analyzer",
+                                "is_internal": true
+                            }
+                        }
+                    }
+                },
+                "else": {
+                    "actions": {}
+                }
+            },
+            "Generate_Message": {
+                "type": "Http",
+                "runAfter": {
+                    "Check_Has_Attachments": ["Succeeded"]
+                },
                 "inputs": {
                     "method": "POST",
-                    "uri": "@{appsetting('AI_FOUNDRY_ENDPOINT')}/openai/responses?api-version=2025-03-01-preview",
+                    "uri": "@{appsetting('AI_FOUNDRY_ENDPOINT')}/openai/v1/responses",
                     "headers": {
                         "Content-Type": "application/json"
                     },
                     "authentication": {
                         "type": "ManagedServiceIdentity",
-                        "identity": "@{appsetting('MANAGED_IDENTITY_CLIENT_ID')}",
-                        "audience": "https://cognitiveservices.azure.com"
+                        "identity": "@{appsetting('MANAGED_IDENTITY_RESOURCE_ID')}",
+                        "audience": "https://ai.azure.com"
                     },
                     "body": {
-                        "model": "gpt-4.1-mini",
-                        "agent_id": "@{appsetting('MESSAGE_AGENT_ID')}",
-                        "input": "Generate HR message for this classified ticket:\n\nOriginal Ticket:\nSubject: @{triggerBody()?['subject']}\nDescription: @{triggerBody()?['description']}\n\nClassification:\nCategory: @{body('Parse_Classification')?['category']}\nSubcategory: @{body('Parse_Classification')?['subcategory']}\nLanguage: @{body('Parse_Classification')?['language']}\nMissing Info: @{join(body('Parse_Classification')?['missingInfo'], ', ')}"
+                        "agent_reference": {
+                            "type": "agent_reference",
+                            "name": "@{appsetting('MESSAGE_AGENT_NAME')}"
+                        },
+                        "input": [
+                            {
+                                "type": "message",
+                                "role": "user",
+                                "content": [
+                                    {
+                                        "type": "input_text",
+                                        "text": "Generate HR message for this classified ticket:\n\nOriginal Ticket:\nSubject: @{triggerBody()?['subject']}\nDescription: @{triggerBody()?['description']}\n\nClassification:\nCategory: @{body('Parse_Classification')?['category']}\nSubcategory: @{body('Parse_Classification')?['subcategory']}\nLanguage: @{body('Parse_Classification')?['language']}\nMissing Info: @{join(body('Parse_Classification')?['missingInfo'], ', ')}"
+                                    }
+                                ]
+                            }
+                        ]
                     }
                 },
                 "retryPolicy": {
@@ -104,7 +246,7 @@
                     "Generate_Message": ["Succeeded"]
                 },
                 "inputs": {
-                    "content": "@body('Generate_Message')?['output']?[0]?['content']?[0]?['text']",
+                    "content": "@{trim(replace(replace(last(body('Generate_Message')?['output'])?['content']?[0]?['text'], '```json', ''), '```', ''))}",
                     "schema": {
                         "type": "object",
                         "properties": {

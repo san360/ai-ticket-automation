@@ -22,6 +22,9 @@ param managedIdentityPrincipalId string
 @description('Application Insights connection string for tracing')
 param appInsightsConnectionString string
 
+@description('Application Insights instrumentation key')
+param appInsightsInstrumentationKey string
+
 // AI Foundry resource (AIServices kind)
 resource aiFoundry 'Microsoft.CognitiveServices/accounts@2025-04-01-preview' = {
   name: aiFoundryName
@@ -62,7 +65,7 @@ resource appInsightsConnection 'Microsoft.CognitiveServices/accounts/projects/co
     target: appInsightsConnectionString
     authType: 'ApiKey'
     credentials: {
-      key: ''
+      key: appInsightsInstrumentationKey
     }
     metadata: {
       ApiType: 'Azure'
@@ -98,7 +101,18 @@ resource cogServicesUserRole 'Microsoft.Authorization/roleAssignments@2022-04-01
   }
 }
 
-// Cognitive Services User role for managed identity (for agent operations)
+// Foundry User role for managed identity (required for agent invocation via Responses API)
+resource foundryUserRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(aiFoundry.id, managedIdentityPrincipalId, 'Foundry User')
+  scope: aiFoundry
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '53ca6127-db72-4b80-b1b0-d745d6d5456d')
+    principalId: managedIdentityPrincipalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+// Cognitive Services Contributor role for managed identity (resource management)
 resource cogServicesContributorRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid(aiFoundry.id, managedIdentityPrincipalId, 'Cognitive Services Contributor')
   scope: aiFoundry
@@ -111,5 +125,5 @@ resource cogServicesContributorRole 'Microsoft.Authorization/roleAssignments@202
 
 output name string = aiFoundry.name
 output id string = aiFoundry.id
-output endpoint string = 'https://${aiFoundryName}.cognitiveservices.azure.com'
+output endpoint string = 'https://${aiFoundryName}.services.ai.azure.com/api/projects/${aiProjectName}'
 output projectName string = aiProject.name

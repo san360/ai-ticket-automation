@@ -47,7 +47,7 @@ param batchSize string = '1'
 
 var abbrs = loadJsonContent('./abbreviations.json')
 var resourceToken = toLower(uniqueString(subscription().id, environmentName, location))
-var tags = { 'azd-env-name': environmentName }
+var tags = { 'azd-env-name': environmentName, 'SecurityControl': 'Ignore' }
 
 // Resource group
 resource rg 'Microsoft.Resources/resourceGroups@2024-03-01' = {
@@ -103,6 +103,7 @@ module aiFoundry './modules/ai-foundry.bicep' = {
     modelVersion: modelVersion
     managedIdentityPrincipalId: identity.outputs.principalId
     appInsightsConnectionString: appInsights.outputs.connectionString
+    appInsightsInstrumentationKey: appInsights.outputs.instrumentationKey
   }
 }
 
@@ -125,6 +126,8 @@ module containerApp './modules/container-app.bicep' = {
     name: !empty(containerAppName) ? containerAppName : '${abbrs.containerApp}${resourceToken}'
     location: location
     tags: tags
+    containerRegistryLoginServer: containerRegistry.outputs.loginServer
+    containerRegistryName: containerRegistry.outputs.name
   }
 }
 
@@ -138,6 +141,7 @@ module logicApp './modules/logic-app.bicep' = {
     tags: tags
     managedIdentityId: identity.outputs.id
     managedIdentityClientId: identity.outputs.clientId
+    managedIdentityPrincipalId: identity.outputs.principalId
     keyVaultName: keyVault.outputs.name
     aiFoundryEndpoint: aiFoundry.outputs.endpoint
     serviceDeskBaseUrl: containerApp.outputs.url
@@ -156,6 +160,7 @@ output LOGIC_APP_NAME string = logicApp.outputs.name
 output KEY_VAULT_NAME string = keyVault.outputs.name
 output MANAGED_IDENTITY_NAME string = identity.outputs.name
 output MANAGED_IDENTITY_CLIENT_ID string = identity.outputs.clientId
+output MANAGED_IDENTITY_RESOURCE_ID string = identity.outputs.id
 output CONTAINER_APP_URL string = containerApp.outputs.url
 output CONTAINER_REGISTRY_LOGIN_SERVER string = containerRegistry.outputs.loginServer
 output CONTAINER_REGISTRY_NAME string = containerRegistry.outputs.name

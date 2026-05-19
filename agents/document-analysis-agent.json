@@ -1,0 +1,10 @@
+{
+  "agent_name": "document-analysis-agent",
+  "definition": {
+    "model": "${GPT_DEPLOYMENT}",
+    "instructions_file": "prompts/document-analysis-agent.md",
+    "tools": [],
+    "response_format": "json_object"
+  },
+  "description": "Analyzes HR ticket attachments (medical certificates, documents) for validity and completeness"
+}

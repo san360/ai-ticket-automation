@@ -41,6 +41,7 @@
                                 "description": { "type": "string" },
                                 "status": { "type": "string" },
                                 "caller_name": { "type": "string" },
+                                "attachments": { "type": "array" },
                                 "created_at": { "type": "string" }
                             }
                         }

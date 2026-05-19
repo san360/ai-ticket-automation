@@ -28,6 +28,15 @@ class ClosureFeedback(BaseModel):
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
+class Attachment(BaseModel):
+    filename: str
+    content_type: str
+    size_bytes: int
+    extracted_text: str = ""
+    url: str = ""
+    analysis_result: Optional[dict] = None
+
+
 class Ticket(BaseModel):
     id: str = Field(default_factory=lambda: f"INC-{str(uuid4())[:8].upper()}")
     number: str = ""
@@ -41,6 +50,8 @@ class Ticket(BaseModel):
     confidence: Optional[float] = None
     missing_info: list[str] = Field(default_factory=list)
     caller_name: str = "Employee"
+    attachments: list[Attachment] = Field(default_factory=list)
+    attachment_analysis: Optional[dict] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     comments: list[Comment] = Field(default_factory=list)
@@ -65,6 +76,7 @@ class UpdateTicketRequest(BaseModel):
     language: Optional[str] = None
     confidence: Optional[float] = None
     missing_info: Optional[list[str]] = None
+    attachment_analysis: Optional[dict] = None
 
 
 class AddCommentRequest(BaseModel):

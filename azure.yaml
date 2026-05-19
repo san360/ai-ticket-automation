@@ -7,9 +7,11 @@ services:
     host: containerapp
     language: python
     docker:
-      path: ./src/servicedesk-simulator/Dockerfile
+      path: ./Dockerfile
+      remoteBuild: true
+      registry: ${CONTAINER_REGISTRY_LOGIN_SERVER}
 hooks:
-  postprovision:
+  postdeploy:
     shell: pwsh
     run: ./scripts/post-provision.ps1
     interactive: true

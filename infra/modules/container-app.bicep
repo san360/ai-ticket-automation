@@ -7,6 +7,12 @@ param location string
 @description('Tags for the resource')
 param tags object = {}
 
+@description('Container Registry login server')
+param containerRegistryLoginServer string
+
+@description('Container Registry name')
+param containerRegistryName string
+
 // Log Analytics Workspace
 resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
   name: '${name}-logs'
@@ -36,6 +42,11 @@ resource containerAppsEnv 'Microsoft.App/managedEnvironments@2024-03-01' = {
   }
 }
 
+// Reference existing Container Registry
+resource acr 'Microsoft.ContainerRegistry/registries@2023-07-01' existing = {
+  name: containerRegistryName
+}
+
 // Container App (ServiceDesk Simulator)
 resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
   name: name
@@ -44,6 +55,19 @@ resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
   properties: {
     environmentId: containerAppsEnv.id
     configuration: {
+      registries: [
+        {
+          server: containerRegistryLoginServer
+          username: acr.listCredentials().username
+          passwordSecretRef: 'acr-password'
+        }
+      ]
+      secrets: [
+        {
+          name: 'acr-password'
+          value: acr.listCredentials().passwords[0].value
+        }
+      ]
       ingress: {
         external: true
         targetPort: 8000

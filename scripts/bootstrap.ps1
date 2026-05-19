@@ -112,6 +112,11 @@ if (-not $envExists) {
 azd env set AZURE_LOCATION swedencentral 2>$null
 azd env set AZURE_SUBSCRIPTION_ID $subscriptionId 2>$null
 azd env set AZURE_ENV_NAME $envName 2>$null
+
+# Set infra parameters explicitly (required by azd 1.23+)
+azd env config set infra.parameters.environmentName $envName 2>$null
+azd env config set infra.parameters.location swedencentral 2>$null
+
 Write-Host "  Environment configured (swedencentral, $subscriptionId)" -ForegroundColor Green
 
 # ─────────────────────────────────────────────────────────────
