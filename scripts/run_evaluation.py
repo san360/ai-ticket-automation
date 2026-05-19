@@ -87,31 +87,33 @@ def setup_continuous_eval(project_client, openai_client, agent_name: str, config
     # Check if eval already exists
     eval_obj = find_existing_eval(openai_client, eval_name)
     if eval_obj:
-        print(f"  Eval already exists: {eval_obj.id}")
-    else:
-        # Create eval group with responses data source (for continuous eval)
-        data_source_config = AzureAIDataSourceConfig(type="azure_ai_source", scenario="responses")
+        print(f"  Eval already exists: {eval_obj.id} - deleting to recreate...")
+        openai_client.evals.delete(eval_obj.id)
+        eval_obj = None
 
-        testing_criteria = [
-            TestingCriterionAzureAIEvaluator(
-                type="azure_ai_evaluator",
-                name=name.split(".")[-1],
-                evaluator_name=name,
-                initialization_parameters={"model": deployment_name},
-                data_mapping={
-                    "query": "{{item.input}}",
-                    "response": "{{item.output}}",
-                },
-            )
-            for name in config["evaluators"]
-        ]
+    # Create eval group with responses data source (for continuous eval)
+    data_source_config = AzureAIDataSourceConfig(type="azure_ai_source", scenario="responses")
 
-        eval_obj = openai_client.evals.create(
-            name=eval_name,
-            data_source_config=data_source_config,
-            testing_criteria=testing_criteria,
+    testing_criteria = [
+        TestingCriterionAzureAIEvaluator(
+            type="azure_ai_evaluator",
+            name=name.split(".")[-1],
+            evaluator_name=name,
+            initialization_parameters={"deployment_name": deployment_name},
+            data_mapping={
+                "query": "{{item.input}}",
+                "response": "{{item.output}}",
+            },
         )
-        print(f"  Created eval: {eval_obj.id}")
+        for name in config["evaluators"]
+    ]
+
+    eval_obj = openai_client.evals.create(
+        name=eval_name,
+        data_source_config=data_source_config,
+        testing_criteria=testing_criteria,
+    )
+    print(f"  Created eval: {eval_obj.id}")
 
     # Create or update the continuous evaluation rule
     rule = project_client.evaluation_rules.create_or_update(
@@ -121,7 +123,7 @@ def setup_continuous_eval(project_client, openai_client, agent_name: str, config
             description=f"Continuous evaluation for {agent_name} on every response",
             action=ContinuousEvaluationRuleAction(
                 eval_id=eval_obj.id,
-                max_hourly_runs=10,
+                max_hourly_runs=100,
             ),
             event_type=EvaluationRuleEventType.RESPONSE_COMPLETED,
             filter=EvaluationRuleFilter(agent_name=agent_name),
@@ -130,7 +132,7 @@ def setup_continuous_eval(project_client, openai_client, agent_name: str, config
     )
     print(f"  Rule active: {rule.id} (enabled={rule.enabled})")
     print(f"  Triggers on: {agent_name} RESPONSE_COMPLETED")
-    print(f"  Max hourly runs: 10")
+    print(f"  Max hourly runs: 100")
 
     return eval_obj.id
 
