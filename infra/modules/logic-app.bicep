@@ -22,6 +22,12 @@ param aiFoundryEndpoint string
 @description('AI Foundry project name')
 param aiProjectName string
 
+@description('ServiceDesk base URL (Container App URL)')
+param serviceDeskBaseUrl string = ''
+
+@description('Batch size for ticket processing (default: 1)')
+param batchSize string = '1'
+
 // App Service Plan (WS1) for Logic Apps Standard
 resource appServicePlan 'Microsoft.Web/serverfarms@2023-12-01' = {
   name: '${name}-plan'
@@ -110,6 +116,14 @@ resource logicApp 'Microsoft.Web/sites@2023-12-01' = {
         {
           name: 'AI_PROJECT_NAME'
           value: aiProjectName
+        }
+        {
+          name: 'SERVICEDESK_BASE_URL'
+          value: serviceDeskBaseUrl
+        }
+        {
+          name: 'BATCH_SIZE'
+          value: batchSize
         }
       ]
     }

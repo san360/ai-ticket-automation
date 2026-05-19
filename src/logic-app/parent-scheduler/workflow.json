@@ -17,7 +17,7 @@
                 "runAfter": {},
                 "inputs": {
                     "method": "GET",
-                    "uri": "@{appsetting('SERVICEDESK_BASE_URL')}/api/incidents?status=open",
+                    "uri": "@{appsetting('SERVICEDESK_BASE_URL')}/api/incidents?status=open&limit=@{appsetting('BATCH_SIZE')}",
                     "headers": {
                         "Content-Type": "application/json"
                     }

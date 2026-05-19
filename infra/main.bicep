@@ -85,6 +85,17 @@ module aiFoundry './modules/ai-foundry.bicep' = {
   }
 }
 
+// Container App (ServiceDesk Simulator)
+module containerApp './modules/container-app.bicep' = {
+  name: 'container-app'
+  scope: rg
+  params: {
+    name: !empty(containerAppName) ? containerAppName : '${abbrs.containerApp}${resourceToken}'
+    location: location
+    tags: tags
+  }
+}
+
 // Logic App Standard
 module logicApp './modules/logic-app.bicep' = {
   name: 'logic-app'
@@ -98,17 +109,8 @@ module logicApp './modules/logic-app.bicep' = {
     keyVaultName: keyVault.outputs.name
     aiFoundryEndpoint: aiFoundry.outputs.endpoint
     aiProjectName: aiFoundry.outputs.projectName
-  }
-}
-
-// Container App (ServiceDesk Simulator)
-module containerApp './modules/container-app.bicep' = {
-  name: 'container-app'
-  scope: rg
-  params: {
-    name: !empty(containerAppName) ? containerAppName : '${abbrs.containerApp}${resourceToken}'
-    location: location
-    tags: tags
+    serviceDeskBaseUrl: containerApp.outputs.url
+    batchSize: '1'
   }
 }
 

@@ -14,6 +14,7 @@ env:
   AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
   AZURE_OPENAI_API_VERSION: "2025-01-01-preview"
   EVAL_MODEL_DEPLOYMENT: "gpt-4.1-mini"
+  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
 jobs:
   evaluate:
@@ -48,8 +49,9 @@ jobs:
         with:
           name: evaluation-results
           path: |
-            evaluation/eval_results.json
             evaluation/eval_summary.json
+            evaluation/classifier_results.json
+            evaluation/message_results.json
           retention-days: 30
 
       - name: Comment PR with results
@@ -66,29 +68,23 @@ jobs:
             }
             
             const summary = JSON.parse(fs.readFileSync(summaryPath, 'utf8'));
-            const metrics = summary.metrics;
             
-            let body = `## 🔍 AI Agent Evaluation Results\n\n`;
-            body += `**Samples evaluated:** ${summary.num_samples}\n\n`;
-            body += `| Metric | Score | Status |\n|--------|-------|--------|\n`;
+            let body = `## 🔍 Agent Evaluation Results\n\n`;
+            body += `**Evaluation:** \`${summary.evaluation_name}\`\n`;
+            body += `**Overall:** ${summary.overall_pass ? '✅ PASS' : '❌ FAIL'}\n\n`;
             
-            const thresholds = {
-              'classification.classification_accuracy': 0.80,
-              'classification.category_match': 0.85,
-              'classification.language_match': 0.95,
-              'relevance.relevance': 3.0,
-              'coherence.coherence': 3.0,
-            };
-            
-            for (const [key, value] of Object.entries(metrics).sort()) {
-              if (typeof value === 'number') {
-                const threshold = thresholds[key];
-                const status = threshold ? (value >= threshold ? '✅' : '❌') : '➖';
-                body += `| \`${key}\` | ${value.toFixed(4)} | ${status} |\n`;
+            for (const [agent, metrics] of Object.entries(summary.runs)) {
+              body += `### ${agent} agent\n\n`;
+              body += `| Metric | Score |\n|--------|-------|\n`;
+              for (const [key, value] of Object.entries(metrics).sort()) {
+                if (typeof value === 'number') {
+                  body += `| \`${key}\` | ${value.toFixed(4)} |\n`;
+                }
               }
+              body += `\n`;
             }
             
-            body += `\n---\n*Evaluation ran on commit ${context.sha.substring(0, 7)}*`;
+            body += `---\n*Commit ${context.sha.substring(0, 7)} · Branch \`${context.payload.pull_request.head.ref}\`*`;
             
             github.rest.issues.createComment({
               issue_number: context.issue.number,

@@ -1,0 +1,112 @@
+"""Default seed data for the ServiceDesk simulator.
+
+This data is used to populate the database on startup and on reset.
+It is immutable — always returns a fresh list of ticket dicts.
+"""
+
+SEED_TICKETS: list[dict] = [
+    {
+        "subject": "Krankmeldung ab Montag",
+        "description": (
+            "Guten Tag, ich bin seit Montag krank und kann nicht zur Arbeit kommen. "
+            "Mein Arzt hat mir ein Zeugnis ausgestellt, das ich hier anhänge. "
+            "Voraussichtlich bin ich bis Freitag abwesend."
+        ),
+        "caller_name": "Anna Müller",
+    },
+    {
+        "subject": "Changement d'adresse",
+        "description": (
+            "Bonjour, je viens de déménager et j'aimerais mettre à jour mon adresse. "
+            "Ma nouvelle adresse est: Rue du Marché 15, 1204 Genève. "
+            "Le déménagement a eu lieu le 1er mars."
+        ),
+        "caller_name": "Pierre Dupont",
+    },
+    {
+        "subject": "Lohnfrage März",
+        "description": (
+            "Hi, I noticed my March payslip shows a deduction of CHF 450 under "
+            "'Other deductions' that I don't understand. Could someone explain what this is for?"
+        ),
+        "caller_name": "James Wilson",
+    },
+    {
+        "subject": "Mutterschaftsurlaub planen",
+        "description": (
+            "Liebe HR, ich bin schwanger und möchte meinen Mutterschaftsurlaub planen. "
+            "Der errechnete Termin ist am 15. Juli. Ich möchte 2 Wochen vor dem Termin "
+            "in den Urlaub gehen. Das ärztliche Attest reiche ich nächste Woche nach."
+        ),
+        "caller_name": "Sarah Keller",
+    },
+    {
+        "subject": "Signalement comportement inapproprié",
+        "description": (
+            "Je souhaite signaler un comportement inapproprié de la part d'un collègue. "
+            "Depuis plusieurs semaines, cette personne fait des remarques déplacées à mon égard. "
+            "Je préfère ne pas donner les détails ici mais j'aimerais en parler à quelqu'un de confiance."
+        ),
+        "caller_name": "Marie Leclerc",
+    },
+    {
+        "subject": "Cambio dati bancari",
+        "description": (
+            "Buongiorno, ho cambiato banca e vorrei aggiornare i miei dati bancari "
+            "per il versamento dello stipendio. Il nuovo IBAN è CH93 0076 2011 6238 5295 7. "
+            "La banca è UBS. Il titolare del conto sono io."
+        ),
+        "caller_name": "Marco Rossi",
+    },
+    {
+        "subject": "PRINCE2 Kurs Anfrage",
+        "description": (
+            "Hallo HR-Team, ich möchte gerne an einem Projektmanagement-Kurs teilnehmen. "
+            "Es handelt sich um den 'PRINCE2 Foundation' Kurs bei Digicomp vom 10.-12. April. "
+            "Die Kosten betragen CHF 2'400. Mein Vorgesetzter hat mündlich zugestimmt."
+        ),
+        "caller_name": "Thomas Weber",
+    },
+    {
+        "subject": "Krank - Dauer unbekannt",
+        "description": (
+            "Hallo, ich fühle mich seit gestern nicht gut und bleibe diese Woche zu Hause. "
+            "Ich weiss noch nicht wann ich zurückkomme."
+        ),
+        "caller_name": "Lisa Brunner",
+    },
+    {
+        "subject": "Allocations familiales - naissance",
+        "description": (
+            "Bonjour, ma femme vient d'accoucher le 5 février. Notre fils s'appelle Lucas. "
+            "Je voudrais demander les allocations familiales. Ci-joint l'acte de naissance."
+        ),
+        "caller_name": "Jean-Marc Favre",
+    },
+    {
+        "subject": "Frage zum Vertrag",
+        "description": (
+            "Hallo, ich habe eine Frage zu meinem Vertrag. "
+            "Können Sie mich bitte zurückrufen?"
+        ),
+        "caller_name": "Michael Schmidt",
+    },
+    {
+        "subject": "Reisekostenabrechnung München",
+        "description": (
+            "Guten Tag, ich war letzte Woche auf Geschäftsreise in München und möchte "
+            "meine Reisekosten abrechnen. Hotel: CHF 180/Nacht (2 Nächte), Zugticket: CHF 95. "
+            "Die Belege sind beigefügt."
+        ),
+        "caller_name": "Sandra Huber",
+    },
+    {
+        "subject": "Work Reference Letter Request",
+        "description": (
+            "Hello, I am applying for a new position externally and would need a work "
+            "reference letter. Could you please prepare one in English? I have been with "
+            "the company for 4 years in the Marketing department."
+        ),
+        "caller_name": "David Chen",
+    },
+]
