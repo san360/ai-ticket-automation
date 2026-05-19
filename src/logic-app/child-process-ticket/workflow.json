@@ -153,6 +153,8 @@
                                     "documentType": { "type": "string" },
                                     "concerns": { "type": "array", "items": { "type": "string" } },
                                     "extractedInfo": { "type": "object" },
+                                    "doctorVerified": { "type": "string" },
+                                    "doctorVerificationDetails": { "type": "string" },
                                     "recommendation": { "type": "string" },
                                     "reasoningSummary": { "type": "string" }
                                 }
@@ -315,10 +317,46 @@
                     }
                 }
             },
+            "Record_Evaluation": {
+                "type": "Http",
+                "runAfter": {
+                    "Post_Employee_Message": ["Succeeded"]
+                },
+                "inputs": {
+                    "method": "POST",
+                    "uri": "@{appsetting('SERVICEDESK_BASE_URL')}/api/evaluations",
+                    "headers": {
+                        "Content-Type": "application/json"
+                    },
+                    "body": {
+                        "ticket_id": "@{triggerBody()?['id']}",
+                        "metrics": {
+                            "classification_confidence": "@{body('Parse_Classification')?['confidence']}",
+                            "category_assigned": "@{body('Parse_Classification')?['category']}",
+                            "language_detected": "@{body('Parse_Classification')?['language']}",
+                            "has_missing_info": "@{greater(length(coalesce(body('Parse_Classification')?['missingInfo'], json('[]'))), 0)}",
+                            "document_analysis_performed": "@{greater(length(coalesce(triggerBody()?['attachments'], json('[]'))), 0)}",
+                            "document_valid": "@{if(greater(length(coalesce(triggerBody()?['attachments'], json('[]'))), 0), body('Parse_Document_Analysis')?['documentValid'], null)}",
+                            "doctor_verified": "@{if(greater(length(coalesce(triggerBody()?['attachments'], json('[]'))), 0), body('Parse_Document_Analysis')?['doctorVerified'], null)}",
+                            "recommendation": "@{if(greater(length(coalesce(triggerBody()?['attachments'], json('[]'))), 0), body('Parse_Document_Analysis')?['recommendation'], null)}",
+                            "message_generated": true
+                        },
+                        "agent_outputs": {
+                            "classification": "@body('Parse_Classification')",
+                            "message": "@body('Parse_Message')"
+                        }
+                    }
+                },
+                "retryPolicy": {
+                    "type": "fixed",
+                    "count": 1,
+                    "interval": "PT5S"
+                }
+            },
             "Response": {
                 "type": "Response",
                 "runAfter": {
-                    "Post_Employee_Message": ["Succeeded"]
+                    "Record_Evaluation": ["Succeeded", "Failed"]
                 },
                 "inputs": {
                     "statusCode": 200,

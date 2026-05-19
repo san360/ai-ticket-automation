@@ -11,10 +11,22 @@ MESSAGE_GATES = {
     "coherence.coherence": 3.0,
 }
 
+DOCUMENT_ANALYSIS_GATES = {
+    "document_analysis.document_analysis_accuracy": 0.80,
+    "document_analysis.validity_match": 0.85,
+    "document_analysis.doctor_verification_accuracy": 0.75,
+}
+
 
 def check_quality_gates(metrics: dict, agent: str, verbose: bool = True) -> bool:
     """Check if evaluation metrics meet quality thresholds for given agent."""
-    gates = CLASSIFIER_GATES if agent == "classifier" else MESSAGE_GATES
+    if agent == "classifier":
+        gates = CLASSIFIER_GATES
+    elif agent == "document_analysis":
+        gates = DOCUMENT_ANALYSIS_GATES
+    else:
+        gates = MESSAGE_GATES
+
     failures = []
 
     for metric, threshold in gates.items():

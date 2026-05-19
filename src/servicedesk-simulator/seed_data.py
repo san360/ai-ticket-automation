@@ -10,6 +10,10 @@ from attachment_data import (
     VALID_DOCTOR_NOTE_IMAGE,
     MISMATCHED_NAME_CERTIFICATE,
     EXPIRED_CERTIFICATE,
+    FICTITIOUS_DOCTOR_CERTIFICATE,
+    FAKE_CLINIC_CERTIFICATE,
+    VALID_CERTIFICATE_VERIFIABLE,
+    GLN_MISMATCH_CERTIFICATE,
 )
 
 SEED_TICKETS: list[dict] = [
@@ -157,5 +161,47 @@ SEED_TICKETS: list[dict] = [
         ),
         "caller_name": "Thomas Weber",
         "attachments": [EXPIRED_CERTIFICATE],
+    },
+    # --- Attachment scenario: SUSPICIOUS - fictitious doctor (not findable via web) ---
+    {
+        "subject": "Krankmeldung - 2 Wochen Ausfall",
+        "description": (
+            "Hallo HR-Team, ich bin leider für die nächsten zwei Wochen krank geschrieben. "
+            "Das Arztzeugnis habe ich angehängt. Bitte um Bestätigung."
+        ),
+        "caller_name": "Stefan Gruber",
+        "attachments": [FICTITIOUS_DOCTOR_CERTIFICATE],
+    },
+    # --- Attachment scenario: SUSPICIOUS - fake clinic in Geneva ---
+    {
+        "subject": "Arrêt maladie - certificat joint",
+        "description": (
+            "Bonjour, je suis en arrêt maladie depuis lundi. "
+            "Ci-joint le certificat médical de mon médecin. "
+            "Je reviendrai au bureau le 2 juin."
+        ),
+        "caller_name": "Marie Lefevre",
+        "attachments": [FAKE_CLINIC_CERTIFICATE],
+    },
+    # --- Attachment scenario: VALID - verifiable university hospital ---
+    {
+        "subject": "Krankheit - Arztzeugnis USZ",
+        "description": (
+            "Guten Tag, ich war im Universitätsspital Zürich und bin für eine Woche "
+            "krankgeschrieben worden. Das Zeugnis ist anbei."
+        ),
+        "caller_name": "Katrin Hofmann",
+        "attachments": [VALID_CERTIFICATE_VERIFIABLE],
+    },
+    # --- Attachment scenario: SUSPICIOUS - GLN doesn't match doctor name ---
+    {
+        "subject": "Teilkrankmeldung 50% - Arztzeugnis",
+        "description": (
+            "Hallo, ich bin zu 50% arbeitsunfähig geschrieben worden. "
+            "Das Arztzeugnis meines Hausarztes finden Sie im Anhang. "
+            "Ich werde morgens von zu Hause arbeiten."
+        ),
+        "caller_name": "Rolf Meier",
+        "attachments": [GLN_MISMATCH_CERTIFICATE],
     },
 ]

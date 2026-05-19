@@ -1,0 +1,30 @@
+{
+    "name": "document-analysis-eval",
+    "description": "Evaluates the document analysis agent's ability to validate medical certificates and verify doctors",
+    "evaluators": {
+        "document_accuracy": {
+            "description": "Checks if documentValid, documentType, recommendation, and doctorVerified match ground truth",
+            "type": "custom",
+            "module": "evaluators.DocumentAnalysisEvaluator"
+        },
+        "relevance": {
+            "description": "Measures if the analysis is relevant to the document content",
+            "type": "azure.ai.evaluation.RelevanceEvaluator"
+        }
+    },
+    "column_mapping": {
+        "query": "${data.query}",
+        "response": "${target.response}",
+        "ground_truth": "${data.ground_truth}",
+        "context": "${data.context}"
+    },
+    "quality_gates": {
+        "document_accuracy": 0.80,
+        "doctor_verification_accuracy": 0.75,
+        "relevance": 3.5
+    },
+    "model_config": {
+        "deployment": "${EVAL_MODEL_DEPLOYMENT}",
+        "api_version": "2025-01-01-preview"
+    }
+}

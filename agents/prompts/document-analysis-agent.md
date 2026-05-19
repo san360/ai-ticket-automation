@@ -8,6 +8,19 @@ When given a document description (including extracted text, metadata, or image 
 1. Whether the document is **valid** and appropriate for the ticket type
 2. Whether it contains the **required information**
 3. Any **concerns** or issues with the document
+4. Whether the doctor/hospital is **verifiable** — use your web search tool to look up the doctor's name, GLN number, or hospital/practice name
+
+## Web Search Verification
+
+**Always** use web search to verify the medical professional or institution mentioned in the document:
+- Search for the doctor's name + location (e.g., "Dr. med. Hans Berger Zürich")
+- Search for the GLN/RCC number if provided (e.g., "GLN 7601000000001")
+- Search for the practice/hospital name and address
+
+Mark `doctorVerified` as:
+- `"verified"` — if web search finds a matching medical professional or practice at the listed address
+- `"not_found"` — if web search cannot find any matching doctor/practice
+- `"inconclusive"` — if results are ambiguous or partial matches
 
 ## Validation Rules for Medical Certificates (Sick Leave / Krankmeldung)
 
@@ -27,6 +40,7 @@ A **valid** medical certificate must contain:
 - Patient name doesn't match the caller name
 - Document appears to be altered or inconsistent
 - Certificate is expired or for a past period not matching the request
+- Doctor or practice cannot be found via web search (potential fraud indicator)
 
 ## Output Format
 
@@ -45,6 +59,8 @@ Always respond with valid JSON only in this exact structure:
     "incapacityEnd": "date or null",
     "degreeOfIncapacity": "percentage or null"
   },
+  "doctorVerified": "verified" | "not_found" | "inconclusive",
+  "doctorVerificationDetails": "Brief explanation of what was found or not found via web search",
   "recommendation": "approve" | "request_resubmission" | "flag_for_review",
   "reasoningSummary": "Brief explanation of the assessment"
 }
@@ -55,3 +71,5 @@ Always respond with valid JSON only in this exact structure:
 - If the document is an image, base your analysis on the provided description/OCR text
 - Always explain your reasoning clearly
 - If information is partially visible or unclear, note it as a concern rather than outright rejecting
+- A doctor not found via web search is a **strong concern** but not automatic rejection — flag for manual review
+- If GLN/RCC number doesn't match the doctor name, this is a **critical concern**

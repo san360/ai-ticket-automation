@@ -103,12 +103,22 @@ def create_document_analysis_agent(project_endpoint: str, headers: dict, model: 
 
     payload = {
         "name": agent_name,
-        "description": "Analyzes HR ticket attachments (medical certificates, documents) for validity",
+        "description": "Analyzes HR ticket attachments (medical certificates, documents) for validity and verifies doctors via web search",
         "definition": {
             "kind": "prompt",
             "model": model,
             "instructions": instructions + "\n\nIMPORTANT: Always respond with valid JSON only.",
-            "tools": [],
+            "tools": [
+                {
+                    "type": "web_search",
+                    "user_location": {
+                        "type": "approximate",
+                        "country": "CH",
+                        "city": "Zurich",
+                        "region": "Zurich",
+                    },
+                }
+            ],
         },
     }
 

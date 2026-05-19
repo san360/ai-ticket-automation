@@ -71,3 +71,67 @@ class ClassificationAccuracyEvaluator:
             "missing_info_recall": 0.0,
             "confidence_calibration": 0.0,
         }
+
+
+class DocumentAnalysisEvaluator:
+    """Measures accuracy of document analysis: validity detection, type classification, and doctor verification."""
+
+    def __init__(self):
+        self.id = "document_analysis_accuracy"
+
+    def __call__(self, *, response: str, ground_truth: str, **kwargs) -> dict:
+        try:
+            predicted = json.loads(response)
+            expected = json.loads(ground_truth)
+        except (json.JSONDecodeError, TypeError):
+            return self._zero_scores()
+
+        validity = self._bool_match(predicted, expected, "documentValid")
+        doc_type = self._str_match(predicted, expected, "documentType")
+        recommendation = self._str_match(predicted, expected, "recommendation")
+        doctor_verification = self._doctor_verification_match(predicted, expected)
+
+        overall = validity * 0.30 + doc_type * 0.20 + recommendation * 0.25 + doctor_verification * 0.25
+
+        return {
+            "document_analysis_accuracy": overall,
+            "validity_match": validity,
+            "document_type_match": doc_type,
+            "recommendation_match": recommendation,
+            "doctor_verification_accuracy": doctor_verification,
+        }
+
+    @staticmethod
+    def _bool_match(predicted: dict, expected: dict, field: str) -> float:
+        return float(predicted.get(field) == expected.get(field))
+
+    @staticmethod
+    def _str_match(predicted: dict, expected: dict, field: str) -> float:
+        p = str(predicted.get(field, "")).lower().strip()
+        e = str(expected.get(field, "")).lower().strip()
+        return float(p == e)
+
+    @staticmethod
+    def _doctor_verification_match(predicted: dict, expected: dict) -> float:
+        expected_val = expected.get("doctor_verified_expected")
+        if expected_val is None:
+            # No verification expected (e.g., not a medical certificate)
+            return 1.0
+        predicted_val = predicted.get("doctorVerified", "").lower().strip()
+        expected_val = expected_val.lower().strip()
+        if predicted_val == expected_val:
+            return 1.0
+        # Partial credit: inconclusive when expected not_found or vice versa
+        if {predicted_val, expected_val} == {"inconclusive", "not_found"}:
+            return 0.5
+        return 0.0
+
+    @staticmethod
+    def _zero_scores() -> dict:
+        return {
+            "document_analysis_accuracy": 0.0,
+            "validity_match": 0.0,
+            "document_type_match": 0.0,
+            "recommendation_match": 0.0,
+            "doctor_verification_accuracy": 0.0,
+        }

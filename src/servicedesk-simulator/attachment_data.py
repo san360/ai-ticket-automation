@@ -130,3 +130,108 @@ EXPIRED_CERTIFICATE = {
     ),
     "url": "https://servicedesk.example.com/attachments/old_certificate_jan2025.pdf",
 }
+
+# --- INVALID: Completely fictitious doctor (not findable via web search) ---
+FICTITIOUS_DOCTOR_CERTIFICATE = {
+    "filename": "arztzeugnis_suspicious.pdf",
+    "content_type": "application/pdf",
+    "size_bytes": 41200,
+    "extracted_text": (
+        "ÄRZTLICHES ZEUGNIS\n\n"
+        "Dr. med. Xaver Phantomberg\n"
+        "Geisterallee 999, 0000 Nirgendwo\n"
+        "Tel: +41 00 000 00 00\n\n"
+        "Patient/in: Stefan Gruber\n"
+        "Geburtsdatum: 14.09.1991\n\n"
+        "Datum der Konsultation: 19.05.2026\n\n"
+        "Hiermit bestätige ich, dass oben genannte Person aus gesundheitlichen "
+        "Gründen arbeitsunfähig ist.\n\n"
+        "Arbeitsunfähigkeit: 100%\n"
+        "Von: 19.05.2026\n"
+        "Bis: 30.05.2026\n\n"
+        "Stempel und Unterschrift\n"
+        "Dr. med. Xaver Phantomberg\n"
+        "GLN: 0000000000000"
+    ),
+    "url": "https://servicedesk.example.com/attachments/arztzeugnis_suspicious.pdf",
+}
+
+# --- INVALID: Fake clinic with non-existent address ---
+FAKE_CLINIC_CERTIFICATE = {
+    "filename": "medical_cert_fakeclinic.pdf",
+    "content_type": "application/pdf",
+    "size_bytes": 39800,
+    "extracted_text": (
+        "CERTIFICAT MÉDICAL\n\n"
+        "Dr. Jean-Baptiste Inexistant\n"
+        "Clinique Fantôme SA\n"
+        "Chemin des Nuages 42, 1200 Genève\n"
+        "Tél: +41 22 000 00 00\n\n"
+        "Patient: Marie Lefevre\n"
+        "Date de naissance: 03.07.1995\n\n"
+        "Date de consultation: 18.05.2026\n\n"
+        "Je certifie que le patient susmentionné est en incapacité de travail\n"
+        "pour raisons médicales.\n\n"
+        "Incapacité: 100%\n"
+        "Du: 18.05.2026\n"
+        "Au: 01.06.2026\n\n"
+        "Signature et cachet\n"
+        "Dr. Jean-Baptiste Inexistant\n"
+        "RCC: X000000"
+    ),
+    "url": "https://servicedesk.example.com/attachments/medical_cert_fakeclinic.pdf",
+}
+
+# --- Valid certificate with real-sounding doctor (verifiable) ---
+VALID_CERTIFICATE_VERIFIABLE = {
+    "filename": "zeugnis_universitaetsspital.pdf",
+    "content_type": "application/pdf",
+    "size_bytes": 56700,
+    "extracted_text": (
+        "ÄRZTLICHES ZEUGNIS\n\n"
+        "Universitätsspital Zürich\n"
+        "Klinik für Allgemeine Innere Medizin\n"
+        "Rämistrasse 100, 8091 Zürich\n"
+        "Tel: +41 44 255 11 11\n\n"
+        "Behandelnder Arzt: Dr. med. Stefan Mayer\n\n"
+        "Patient/in: Katrin Hofmann\n"
+        "Geburtsdatum: 22.04.1988\n\n"
+        "Datum der Konsultation: 19.05.2026\n\n"
+        "Hiermit bestätige ich, dass oben genannte Person aus gesundheitlichen "
+        "Gründen arbeitsunfähig ist.\n\n"
+        "Arbeitsunfähigkeit: 100%\n"
+        "Von: 19.05.2026\n"
+        "Bis: 26.05.2026\n\n"
+        "Stempel und Unterschrift\n"
+        "Dr. med. Stefan Mayer\n"
+        "Universitätsspital Zürich\n"
+        "GLN: 7601000618627"
+    ),
+    "url": "https://servicedesk.example.com/attachments/zeugnis_universitaetsspital.pdf",
+}
+
+# --- Suspicious: valid-looking cert but GLN doesn't match doctor name ---
+GLN_MISMATCH_CERTIFICATE = {
+    "filename": "arztzeugnis_gln_mismatch.pdf",
+    "content_type": "application/pdf",
+    "size_bytes": 44100,
+    "extracted_text": (
+        "ÄRZTLICHES ZEUGNIS\n\n"
+        "Dr. med. Andreas Widmer\n"
+        "Praxis am See\n"
+        "Seestrasse 15, 6004 Luzern\n"
+        "Tel: +41 41 345 67 89\n\n"
+        "Patient/in: Rolf Meier\n"
+        "Geburtsdatum: 11.12.1979\n\n"
+        "Datum der Konsultation: 19.05.2026\n\n"
+        "Hiermit bestätige ich, dass oben genannte Person aus gesundheitlichen "
+        "Gründen arbeitsunfähig ist.\n\n"
+        "Arbeitsunfähigkeit: 50%\n"
+        "Von: 19.05.2026\n"
+        "Bis: 02.06.2026\n\n"
+        "Stempel und Unterschrift\n"
+        "Dr. med. Andreas Widmer\n"
+        "GLN: 7601000000001"
+    ),
+    "url": "https://servicedesk.example.com/attachments/arztzeugnis_gln_mismatch.pdf",
+}
