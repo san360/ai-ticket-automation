@@ -83,10 +83,70 @@
                     }
                 }
             },
-            "Check_Has_Attachments": {
+            "Check_Expense_Missing_Receipts": {
                 "type": "If",
                 "runAfter": {
                     "Parse_Classification": ["Succeeded"]
+                },
+                "expression": {
+                    "and": [
+                        {
+                            "equals": [
+                                "@body('Parse_Classification')?['subcategory']",
+                                "Expense Reimbursement"
+                            ]
+                        },
+                        {
+                            "equals": [
+                                "@length(coalesce(triggerBody()?['attachments'], json('[]')))",
+                                0
+                            ]
+                        }
+                    ]
+                },
+                "actions": {
+                    "Update_Status_Awaiting_Receipts": {
+                        "type": "Http",
+                        "runAfter": {},
+                        "inputs": {
+                            "method": "PATCH",
+                            "uri": "@{appsetting('SERVICEDESK_BASE_URL')}/api/incidents/@{triggerBody()?['id']}",
+                            "headers": {
+                                "Content-Type": "application/json"
+                            },
+                            "body": {
+                                "status": "awaiting_info",
+                                "missing_info": ["receipts_required"]
+                            }
+                        }
+                    },
+                    "Post_Request_Receipts_Note": {
+                        "type": "Http",
+                        "runAfter": {
+                            "Update_Status_Awaiting_Receipts": ["Succeeded"]
+                        },
+                        "inputs": {
+                            "method": "POST",
+                            "uri": "@{appsetting('SERVICEDESK_BASE_URL')}/api/incidents/@{triggerBody()?['id']}/actions",
+                            "headers": {
+                                "Content-Type": "application/json"
+                            },
+                            "body": {
+                                "text": "Vielen Dank für Ihre Reisekostenabrechnung. Um Ihren Antrag bearbeiten zu können, benötigen wir bitte die entsprechenden Belege (Hotelrechnungen, Zugtickets, Quittungen etc.) als Anhang. Bitte laden Sie die Dokumente hoch und aktualisieren Sie das Ticket.\n\nThank you for your expense reimbursement request. To process your claim, we need the corresponding receipts (hotel invoices, train tickets, receipts, etc.) attached to this ticket. Please upload the documents and update the ticket.",
+                                "author": "HR Assistant",
+                                "is_internal": false
+                            }
+                        }
+                    }
+                },
+                "else": {
+                    "actions": {}
+                }
+            },
+            "Check_Has_Attachments": {
+                "type": "If",
+                "runAfter": {
+                    "Check_Expense_Missing_Receipts": ["Succeeded"]
                 },
                 "expression": {
                     "and": [

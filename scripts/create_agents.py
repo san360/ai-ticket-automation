@@ -1,8 +1,9 @@
 """Agent creation logic using the Foundry Agent Service (Responses API).
 
-Creates agents via POST {project_endpoint}/agents?api-version=v1
+Creates agents via POST {project_endpoint}/agents/{agent_name}/versions?api-version=v1
 Agents are identified by name (not GUID).
-Supports idempotent deployment (deletes existing agent before recreating).
+Supports versioned deployment — each deploy creates a new version, preserving history.
+Falls back to initial creation if agent doesn't exist yet.
 """
 
 import json
@@ -16,26 +17,37 @@ def load_prompt(prompt_file: str) -> str:
     return path.read_text(encoding="utf-8")
 
 
-def _delete_agent_if_exists(project_endpoint: str, headers: dict, agent_name: str) -> None:
-    """Delete an existing agent by name (ignore if not found)."""
-    resp = requests.delete(
-        f"{project_endpoint}/agents/{agent_name}?api-version=v1",
+def _create_or_update_agent(project_endpoint: str, headers: dict, agent_name: str, payload: dict) -> dict:
+    """Create a new version of an agent, or create the agent if it doesn't exist.
+
+    Uses POST /agents/{name}/versions to create a new version.
+    Falls back to POST /agents to create the agent initially (version 1).
+    """
+    # Try creating a new version (agent already exists)
+    version_payload = {k: v for k, v in payload.items() if k != "name"}
+    resp = requests.post(
+        f"{project_endpoint}/agents/{agent_name}/versions?api-version=v1",
         headers=headers,
+        json=version_payload,
     )
-    if resp.status_code in (200, 204):
-        print(f"  Deleted existing agent: {agent_name}")
-    elif resp.status_code == 404:
-        pass  # Agent doesn't exist, nothing to delete
-    else:
-        print(f"  Warning: delete agent returned {resp.status_code}")
+
+    if resp.status_code == 404:
+        # Agent doesn't exist yet — create it (will be version 1)
+        print(f"  Agent '{agent_name}' not found, creating initial version...")
+        resp = requests.post(
+            f"{project_endpoint}/agents?api-version=v1",
+            headers=headers,
+            json=payload,
+        )
+
+    resp.raise_for_status()
+    return resp.json()
 
 
 def create_classifier_agent(project_endpoint: str, headers: dict, vector_store_id: str, model: str = "gpt-4.1-mini") -> str:
     """Create the classifier agent with file_search tool."""
     instructions = load_prompt("classifier-agent.md")
     agent_name = "hr-ticket-classifier"
-
-    _delete_agent_if_exists(project_endpoint, headers, agent_name)
 
     payload = {
         "name": agent_name,
@@ -54,13 +66,7 @@ def create_classifier_agent(project_endpoint: str, headers: dict, vector_store_i
         },
     }
 
-    resp = requests.post(
-        f"{project_endpoint}/agents?api-version=v1",
-        headers=headers,
-        json=payload,
-    )
-    resp.raise_for_status()
-    result = resp.json()
+    result = _create_or_update_agent(project_endpoint, headers, agent_name, payload)
     print(f"  Created Classifier Agent: {result['name']} (version {result.get('version', 'N/A')})")
     return agent_name
 
@@ -69,8 +75,6 @@ def create_message_agent(project_endpoint: str, headers: dict, model: str = "gpt
     """Create the message generation agent (no tools)."""
     instructions = load_prompt("message-agent.md")
     agent_name = "hr-message-generator"
-
-    _delete_agent_if_exists(project_endpoint, headers, agent_name)
 
     payload = {
         "name": agent_name,
@@ -83,13 +87,7 @@ def create_message_agent(project_endpoint: str, headers: dict, model: str = "gpt
         },
     }
 
-    resp = requests.post(
-        f"{project_endpoint}/agents?api-version=v1",
-        headers=headers,
-        json=payload,
-    )
-    resp.raise_for_status()
-    result = resp.json()
+    result = _create_or_update_agent(project_endpoint, headers, agent_name, payload)
     print(f"  Created Message Agent: {result['name']} (version {result.get('version', 'N/A')})")
     return agent_name
 
@@ -99,11 +97,9 @@ def create_document_analysis_agent(project_endpoint: str, headers: dict, model: 
     instructions = load_prompt("document-analysis-agent.md")
     agent_name = "hr-document-analyzer"
 
-    _delete_agent_if_exists(project_endpoint, headers, agent_name)
-
     payload = {
         "name": agent_name,
-        "description": "Analyzes HR ticket attachments (medical certificates, documents) for validity and verifies doctors via web search",
+        "description": "Analyzes HR ticket attachments (medical certificates, invoices, receipts) for validity and verifies doctors via web search",
         "definition": {
             "kind": "prompt",
             "model": model,
@@ -122,12 +118,6 @@ def create_document_analysis_agent(project_endpoint: str, headers: dict, model: 
         },
     }
 
-    resp = requests.post(
-        f"{project_endpoint}/agents?api-version=v1",
-        headers=headers,
-        json=payload,
-    )
-    resp.raise_for_status()
-    result = resp.json()
+    result = _create_or_update_agent(project_endpoint, headers, agent_name, payload)
     print(f"  Created Document Analysis Agent: {result['name']} (version {result.get('version', 'N/A')})")
     return agent_name

@@ -14,6 +14,11 @@ from attachment_data import (
     FAKE_CLINIC_CERTIFICATE,
     VALID_CERTIFICATE_VERIFIABLE,
     GLN_MISMATCH_CERTIFICATE,
+    VALID_HOTEL_INVOICE,
+    VALID_TRAIN_TICKET,
+    VALID_TAXI_RECEIPT,
+    PERSONAL_DINNER_RECEIPT,
+    ALTERED_RECEIPT,
 )
 
 SEED_TICKETS: list[dict] = [
@@ -203,5 +208,46 @@ SEED_TICKETS: list[dict] = [
         ),
         "caller_name": "Rolf Meier",
         "attachments": [GLN_MISMATCH_CERTIFICATE],
+    },
+    # --- Expense scenario: VALID - hotel + train receipts attached ---
+    {
+        "subject": "Reisekostenabrechnung München - mit Belegen",
+        "description": (
+            "Guten Tag, ich war letzte Woche auf Geschäftsreise in München für die "
+            "Fachmesse und möchte meine Reisekosten abrechnen. Hotel (2 Nächte) und "
+            "Zugticket sind als Belege beigefügt."
+        ),
+        "caller_name": "Sandra Huber",
+        "attachments": [VALID_HOTEL_INVOICE, VALID_TRAIN_TICKET],
+    },
+    # --- Expense scenario: VALID - taxi receipt for client meeting ---
+    {
+        "subject": "Taxispesen Kundentermin",
+        "description": (
+            "Hallo, ich musste letzte Woche ein Taxi zum Messegelände nehmen, da der "
+            "ÖV-Anschluss nicht gepasst hat. Anbei die Quittung. Betrag: EUR 32.40."
+        ),
+        "caller_name": "Sandra Huber",
+        "attachments": [VALID_TAXI_RECEIPT],
+    },
+    # --- Expense scenario: SUSPICIOUS - expensive dinner, potentially personal ---
+    {
+        "subject": "Geschäftsessen München - Spesenabrechnung",
+        "description": (
+            "Guten Tag, ich hatte am 15. Mai ein Geschäftsessen mit einem Kunden in München. "
+            "Anbei die Restaurantrechnung. Teilnehmer: ich und Herr Müller (Kunde)."
+        ),
+        "caller_name": "Marco Bernasconi",
+        "attachments": [PERSONAL_DINNER_RECEIPT],
+    },
+    # --- Expense scenario: SUSPICIOUS - altered/inflated hotel invoice ---
+    {
+        "subject": "Hotelrechnung Geschäftsreise München",
+        "description": (
+            "Hi HR, anbei meine Hotelrechnung für die Geschäftsreise nach München "
+            "vom 14.-16. Mai. Bitte um Erstattung."
+        ),
+        "caller_name": "Marco Bernasconi",
+        "attachments": [ALTERED_RECEIPT],
     },
 ]

@@ -235,3 +235,143 @@ GLN_MISMATCH_CERTIFICATE = {
     ),
     "url": "https://servicedesk.example.com/attachments/arztzeugnis_gln_mismatch.pdf",
 }
+
+# =====================================================
+# EXPENSE REIMBURSEMENT ATTACHMENTS
+# =====================================================
+
+# --- Valid hotel invoice for business trip ---
+VALID_HOTEL_INVOICE = {
+    "filename": "hotel_rechnung_muenchen_2026.pdf",
+    "content_type": "application/pdf",
+    "size_bytes": 67800,
+    "extracted_text": (
+        "RECHNUNG / INVOICE\n\n"
+        "Hotel Königshof München\n"
+        "Karlsplatz 25, 80335 München, Deutschland\n"
+        "Tel: +49 89 551 360\n"
+        "Steuer-Nr: DE 123456789\n\n"
+        "Rechnungsnummer: INV-2026-05-8847\n"
+        "Datum: 16.05.2026\n\n"
+        "Gast: Sandra Huber\n"
+        "Check-in: 14.05.2026\n"
+        "Check-out: 16.05.2026\n\n"
+        "POSITIONEN:\n"
+        "14.05.2026  Einzelzimmer Business      EUR 165.00\n"
+        "15.05.2026  Einzelzimmer Business      EUR 165.00\n"
+        "14.05.2026  Frühstück Buffet            EUR  22.00\n"
+        "15.05.2026  Frühstück Buffet            EUR  22.00\n"
+        "            City Tax (2 Nächte)          EUR   7.50\n"
+        "-------------------------------------------\n"
+        "NETTO                                   EUR 381.50\n"
+        "MwSt. 7%                                EUR  26.71\n"
+        "-------------------------------------------\n"
+        "GESAMTBETRAG                            EUR 408.21\n\n"
+        "Bezahlt per: Firmenkreditkarte\n"
+        "Kartennr: **** **** **** 4521\n\n"
+        "Vielen Dank für Ihren Aufenthalt!\n"
+        "Wir freuen uns auf Ihren nächsten Besuch."
+    ),
+    "url": "https://servicedesk.example.com/attachments/hotel_rechnung_muenchen_2026.pdf",
+}
+
+# --- Valid train ticket for business trip ---
+VALID_TRAIN_TICKET = {
+    "filename": "sbb_ticket_zuerich_muenchen.pdf",
+    "content_type": "application/pdf",
+    "size_bytes": 23400,
+    "extracted_text": (
+        "SBB CFF FFS\n"
+        "FAHRAUSWEIS / BILLET\n\n"
+        "Buchungsnummer: X7K9M2\n"
+        "Kaufdatum: 10.05.2026\n\n"
+        "Reisender: Sandra Huber\n\n"
+        "HINFAHRT:\n"
+        "14.05.2026  Zürich HB → München Hbf\n"
+        "Abfahrt: 06:32  Ankunft: 10:14\n"
+        "ICE 72, 2. Klasse, Sitzplatz 45\n\n"
+        "RÜCKFAHRT:\n"
+        "16.05.2026  München Hbf → Zürich HB\n"
+        "Abfahrt: 17:21  Ankunft: 21:03\n"
+        "ICE 79, 2. Klasse, Sitzplatz 62\n\n"
+        "Preis: CHF 95.00 (Spartageskarte)\n\n"
+        "Bezahlt: Kreditkarte\n"
+        "Dieser Fahrausweis ist nicht übertragbar."
+    ),
+    "url": "https://servicedesk.example.com/attachments/sbb_ticket_zuerich_muenchen.pdf",
+}
+
+# --- Valid taxi receipt ---
+VALID_TAXI_RECEIPT = {
+    "filename": "taxi_quittung_muenchen.jpg",
+    "content_type": "image/jpeg",
+    "size_bytes": 89200,
+    "extracted_text": (
+        "TAXIQUITTUNG\n\n"
+        "Münchner Taxi-Zentrale\n"
+        "Fahrzeug-Nr: M-TX 4892\n\n"
+        "Datum: 14.05.2026\n"
+        "Uhrzeit: 10:25 - 10:48\n\n"
+        "Von: München Hbf\n"
+        "Nach: Messegelände München\n\n"
+        "Fahrpreis:          EUR 32.40\n"
+        "inkl. MwSt. 7%\n\n"
+        "Bezahlt: Bar\n"
+        "Quittungsnr: TQ-2026-14052"
+    ),
+    "url": "https://servicedesk.example.com/attachments/taxi_quittung_muenchen.jpg",
+}
+
+# --- Suspicious expense: personal dinner receipt ---
+PERSONAL_DINNER_RECEIPT = {
+    "filename": "restaurant_rechnung.jpg",
+    "content_type": "image/jpeg",
+    "size_bytes": 112300,
+    "extracted_text": (
+        "RESTAURANT GOLDENER HIRSCH\n"
+        "Altstadt 17, 80331 München\n\n"
+        "Datum: 15.05.2026\n"
+        "Tisch 8 / Kellner: Mario\n\n"
+        "2x Wiener Schnitzel         EUR 38.00\n"
+        "1x Kalbsfilet                EUR 42.00\n"
+        "1x Flasche Rotwein Barolo   EUR 89.00\n"
+        "2x Tiramisu                  EUR 18.00\n"
+        "1x Grappa                    EUR 12.00\n"
+        "---\n"
+        "Zwischensumme               EUR 199.00\n"
+        "Trinkgeld                    EUR  30.00\n"
+        "---\n"
+        "TOTAL                        EUR 229.00\n\n"
+        "Bewirtet: 2 Personen\n"
+        "Bezahlt: Kreditkarte\n"
+        "Vielen Dank und Auf Wiedersehen!"
+    ),
+    "url": "https://servicedesk.example.com/attachments/restaurant_rechnung.jpg",
+}
+
+# --- Invalid: expense claim with inflated/altered receipt ---
+ALTERED_RECEIPT = {
+    "filename": "hotel_invoice_altered.pdf",
+    "content_type": "application/pdf",
+    "size_bytes": 71200,
+    "extracted_text": (
+        "RECHNUNG\n\n"
+        "Hotel Garni Zentrum\n"
+        "Schillerstrasse 8, 80336 München\n\n"
+        "Rechnungsnummer: R-9921\n"
+        "Datum: 16.05.2026\n\n"
+        "Gast: Marco Bernasconi\n"
+        "Check-in: 14.05.2026\n"
+        "Check-out: 16.05.2026\n\n"
+        "2 Nächte Deluxe Suite        EUR 450.00\n"
+        "Minibar                       EUR 120.00\n"
+        "Spa & Wellness                EUR  85.00\n"
+        "Zimmerservice                  EUR  65.00\n"
+        "---\n"
+        "TOTAL                          EUR 720.00\n\n"
+        "Bezahlt: Überweisung\n\n"
+        "[Note: Font size inconsistencies detected in OCR. "
+        "Amount fields appear to use different typeface than rest of document.]"
+    ),
+    "url": "https://servicedesk.example.com/attachments/hotel_invoice_altered.pdf",
+}
