@@ -1,28 +1,19 @@
-name: AI Agent Evaluation
+name: Setup Continuous Evaluation
 
 on:
-  pull_request:
-    branches: [main]
-    paths:
-      - 'agents/prompts/**'
-      - 'agents/data/**'
-      - 'evaluation/**'
   workflow_dispatch:
 
 env:
-  AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
-  AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
-  AZURE_OPENAI_API_VERSION: "2025-01-01-preview"
-  EVAL_MODEL_DEPLOYMENT: "gpt-4.1-mini"
-  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+  FOUNDRY_ENDPOINT: ${{ secrets.FOUNDRY_ENDPOINT }}
+  GPT_DEPLOYMENT: "gpt-4.1-mini"
 
 jobs:
-  evaluate:
-    name: Run Agent Evaluation
+  setup:
+    name: Configure Continuous Evaluation Rules
     runs-on: ubuntu-latest
     permissions:
-      pull-requests: write
       contents: read
+      id-token: write
 
     steps:
       - uses: actions/checkout@v4
@@ -30,71 +21,18 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.12'
           cache: 'pip'
 
       - name: Install dependencies
-        run: pip install -r evaluation/requirements.txt
+        run: pip install azure-ai-projects azure-identity openai
 
-      - name: Generate evaluation dataset
-        run: python evaluation/generate_dataset.py
-
-      - name: Run evaluation
-        run: python evaluation/run_eval.py
-        continue-on-error: true
-        id: eval
-
-      - name: Upload evaluation results
-        uses: actions/upload-artifact@v4
+      - name: Azure Login
+        uses: azure/login@v2
         with:
-          name: evaluation-results
-          path: |
-            evaluation/eval_summary.json
-            evaluation/classifier_results.json
-            evaluation/message_results.json
-          retention-days: 30
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Comment PR with results
-        if: github.event_name == 'pull_request'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('fs');
-            const summaryPath = './evaluation/eval_summary.json';
-            
-            if (!fs.existsSync(summaryPath)) {
-              console.log('No evaluation summary found');
-              return;
-            }
-            
-            const summary = JSON.parse(fs.readFileSync(summaryPath, 'utf8'));
-            
-            let body = `## 🔍 Agent Evaluation Results\n\n`;
-            body += `**Evaluation:** \`${summary.evaluation_name}\`\n`;
-            body += `**Overall:** ${summary.overall_pass ? '✅ PASS' : '❌ FAIL'}\n\n`;
-            
-            for (const [agent, metrics] of Object.entries(summary.runs)) {
-              body += `### ${agent} agent\n\n`;
-              body += `| Metric | Score |\n|--------|-------|\n`;
-              for (const [key, value] of Object.entries(metrics).sort()) {
-                if (typeof value === 'number') {
-                  body += `| \`${key}\` | ${value.toFixed(4)} |\n`;
-                }
-              }
-              body += `\n`;
-            }
-            
-            body += `---\n*Commit ${context.sha.substring(0, 7)} · Branch \`${context.payload.pull_request.head.ref}\`*`;
-            
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: body
-            });
-
-      - name: Check quality gates
-        if: steps.eval.outcome == 'failure'
-        run: |
-          echo "::error::Evaluation quality gates failed. See PR comment for details."
-          exit 1
+      - name: Setup continuous evaluation
+        run: python scripts/run_evaluation.py

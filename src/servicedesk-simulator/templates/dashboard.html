@@ -140,6 +140,9 @@
                             <td><code>{{ ticket.number }}</code></td>
                             <td>
                                 {{ ticket.subject }}
+                                {% if ticket.attachments %}
+                                <i class="bi bi-paperclip text-info ms-1" title="{{ ticket.attachments|length }} attachment{{ 's' if ticket.attachments|length > 1 else '' }}"></i>
+                                {% endif %}
                                 {% if ticket.missing_info %}
                                 <i class="bi bi-exclamation-triangle text-warning ms-1" title="Missing info"></i>
                                 {% endif %}

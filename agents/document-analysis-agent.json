@@ -3,8 +3,18 @@
   "definition": {
     "model": "${GPT_DEPLOYMENT}",
     "instructions_file": "prompts/document-analysis-agent.md",
-    "tools": [],
+    "tools": [
+      {
+        "type": "web_search",
+        "user_location": {
+          "type": "approximate",
+          "country": "CH",
+          "city": "Zurich",
+          "region": "Zurich"
+        }
+      }
+    ],
     "response_format": "json_object"
   },
-  "description": "Analyzes HR ticket attachments (medical certificates, documents) for validity and completeness"
+  "description": "Analyzes HR ticket attachments (medical certificates, invoices, receipts) for validity and verifies doctors via web search"
 }

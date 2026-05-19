@@ -83,70 +83,10 @@
                     }
                 }
             },
-            "Check_Expense_Missing_Receipts": {
-                "type": "If",
-                "runAfter": {
-                    "Parse_Classification": ["Succeeded"]
-                },
-                "expression": {
-                    "and": [
-                        {
-                            "equals": [
-                                "@body('Parse_Classification')?['subcategory']",
-                                "Expense Reimbursement"
-                            ]
-                        },
-                        {
-                            "equals": [
-                                "@length(coalesce(triggerBody()?['attachments'], json('[]')))",
-                                0
-                            ]
-                        }
-                    ]
-                },
-                "actions": {
-                    "Update_Status_Awaiting_Receipts": {
-                        "type": "Http",
-                        "runAfter": {},
-                        "inputs": {
-                            "method": "PATCH",
-                            "uri": "@{appsetting('SERVICEDESK_BASE_URL')}/api/incidents/@{triggerBody()?['id']}",
-                            "headers": {
-                                "Content-Type": "application/json"
-                            },
-                            "body": {
-                                "status": "awaiting_info",
-                                "missing_info": ["receipts_required"]
-                            }
-                        }
-                    },
-                    "Post_Request_Receipts_Note": {
-                        "type": "Http",
-                        "runAfter": {
-                            "Update_Status_Awaiting_Receipts": ["Succeeded"]
-                        },
-                        "inputs": {
-                            "method": "POST",
-                            "uri": "@{appsetting('SERVICEDESK_BASE_URL')}/api/incidents/@{triggerBody()?['id']}/actions",
-                            "headers": {
-                                "Content-Type": "application/json"
-                            },
-                            "body": {
-                                "text": "Vielen Dank für Ihre Reisekostenabrechnung. Um Ihren Antrag bearbeiten zu können, benötigen wir bitte die entsprechenden Belege (Hotelrechnungen, Zugtickets, Quittungen etc.) als Anhang. Bitte laden Sie die Dokumente hoch und aktualisieren Sie das Ticket.\n\nThank you for your expense reimbursement request. To process your claim, we need the corresponding receipts (hotel invoices, train tickets, receipts, etc.) attached to this ticket. Please upload the documents and update the ticket.",
-                                "author": "HR Assistant",
-                                "is_internal": false
-                            }
-                        }
-                    }
-                },
-                "else": {
-                    "actions": {}
-                }
-            },
             "Check_Has_Attachments": {
                 "type": "If",
                 "runAfter": {
-                    "Check_Expense_Missing_Receipts": ["Succeeded"]
+                    "Parse_Classification": ["Succeeded"]
                 },
                 "expression": {
                     "and": [
@@ -377,46 +317,10 @@
                     }
                 }
             },
-            "Record_Evaluation": {
-                "type": "Http",
-                "runAfter": {
-                    "Post_Employee_Message": ["Succeeded"]
-                },
-                "inputs": {
-                    "method": "POST",
-                    "uri": "@{appsetting('SERVICEDESK_BASE_URL')}/api/evaluations",
-                    "headers": {
-                        "Content-Type": "application/json"
-                    },
-                    "body": {
-                        "ticket_id": "@{triggerBody()?['id']}",
-                        "metrics": {
-                            "classification_confidence": "@{body('Parse_Classification')?['confidence']}",
-                            "category_assigned": "@{body('Parse_Classification')?['category']}",
-                            "language_detected": "@{body('Parse_Classification')?['language']}",
-                            "has_missing_info": "@{greater(length(coalesce(body('Parse_Classification')?['missingInfo'], json('[]'))), 0)}",
-                            "document_analysis_performed": "@{greater(length(coalesce(triggerBody()?['attachments'], json('[]'))), 0)}",
-                            "document_valid": "@{if(greater(length(coalesce(triggerBody()?['attachments'], json('[]'))), 0), body('Parse_Document_Analysis')?['documentValid'], null)}",
-                            "doctor_verified": "@{if(greater(length(coalesce(triggerBody()?['attachments'], json('[]'))), 0), body('Parse_Document_Analysis')?['doctorVerified'], null)}",
-                            "recommendation": "@{if(greater(length(coalesce(triggerBody()?['attachments'], json('[]'))), 0), body('Parse_Document_Analysis')?['recommendation'], null)}",
-                            "message_generated": true
-                        },
-                        "agent_outputs": {
-                            "classification": "@body('Parse_Classification')",
-                            "message": "@body('Parse_Message')"
-                        }
-                    }
-                },
-                "retryPolicy": {
-                    "type": "fixed",
-                    "count": 1,
-                    "interval": "PT5S"
-                }
-            },
             "Response": {
                 "type": "Response",
                 "runAfter": {
-                    "Record_Evaluation": ["Succeeded", "Failed"]
+                    "Post_Employee_Message": ["Succeeded"]
                 },
                 "inputs": {
                     "statusCode": 200,

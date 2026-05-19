@@ -1,35 +1,13 @@
 {
-  "evaluators": {
-    "relevance": {
-      "type": "builtin",
-      "class": "azure.ai.evaluation.RelevanceEvaluator",
-      "description": "Measures if the generated message is relevant to the ticket context"
-    },
-    "coherence": {
-      "type": "builtin",
-      "class": "azure.ai.evaluation.CoherenceEvaluator",
-      "description": "Measures logical consistency and fluency of generated messages"
-    }
-  },
-  "column_mapping": {
-    "query": "${data.query}",
-    "response": "${target.response}",
-    "context": "${data.context}"
-  },
-  "quality_gates": {
-    "relevance": {
-      "min": 4.0,
-      "scale": "1-5",
-      "description": "Minimum relevance score (1=irrelevant, 5=perfectly relevant)"
-    },
-    "coherence": {
-      "min": 4.0,
-      "scale": "1-5",
-      "description": "Minimum coherence score (1=incoherent, 5=perfectly coherent)"
-    }
-  },
-  "model_config": {
-    "deployment": "${EVAL_MODEL_DEPLOYMENT}",
-    "api_version": "2025-01-01-preview"
-  }
+  "name": "message-eval",
+  "description": "Evaluates the HR message generator agent on response quality",
+  "agent_name": "hr-message-generator",
+  "evaluators": [
+    "builtin.relevance",
+    "builtin.task_adherence",
+    "builtin.coherence",
+    "builtin.fluency"
+  ],
+  "judge_model": "gpt-4.1-mini",
+  "data_source": "message-golden-dataset.jsonl"
 }

@@ -88,36 +88,3 @@ class AddCommentRequest(BaseModel):
 class AddFeedbackRequest(BaseModel):
     rating: int = Field(ge=1, le=5)
     comment: str = ""
-
-
-class EvaluationMetrics(BaseModel):
-    """Per-run evaluation metrics recorded after each agent processing."""
-    classification_confidence: Optional[float] = None
-    category_assigned: Optional[str] = None
-    language_detected: Optional[str] = None
-    has_missing_info: bool = False
-    document_analysis_performed: bool = False
-    document_valid: Optional[bool] = None
-    doctor_verified: Optional[str] = None  # "verified" | "not_found" | "inconclusive"
-    recommendation: Optional[str] = None  # "approve" | "request_resubmission" | "flag_for_review"
-    message_generated: bool = False
-    processing_duration_ms: Optional[int] = None
-
-
-class EvaluationRun(BaseModel):
-    """Record of a single ticket processing evaluation."""
-    id: str = Field(default_factory=lambda: str(uuid4()))
-    ticket_id: str
-    ticket_subject: str
-    run_timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    metrics: EvaluationMetrics
-    agent_outputs: dict = Field(default_factory=dict)  # raw classification/message/doc outputs
-    passed_quality_gates: Optional[bool] = None
-    gate_failures: list[str] = Field(default_factory=list)
-
-
-class RecordEvaluationRequest(BaseModel):
-    """Request to record evaluation metrics for a ticket run."""
-    ticket_id: str
-    metrics: EvaluationMetrics
-    agent_outputs: dict = Field(default_factory=dict)

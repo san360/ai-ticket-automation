@@ -66,6 +66,45 @@
                     </div>
                 </div>
 
+                <!-- Attachments -->
+                {% if ticket.attachments %}
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0"><i class="bi bi-paperclip"></i> Attachments</h6>
+                        <span class="badge bg-secondary">{{ ticket.attachments|length }} file{{ 's' if ticket.attachments|length > 1 else '' }}</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            {% for att in ticket.attachments %}
+                            <div class="col-md-6">
+                                <div class="card h-100 bg-dark border-secondary">
+                                    <!-- Preview area -->
+                                    <div class="card-img-top d-flex align-items-center justify-content-center" style="height: 140px; background: #1a1d23; cursor: pointer;" onclick="showPreview('{{ att.filename }}', '{{ att.content_type }}', `{{ att.extracted_text|replace('`', '\\`')|replace('\n', '\\n') }}`)">
+                                        {% if att.content_type.startswith('image/') %}
+                                        <i class="bi bi-file-image text-info" style="font-size: 3rem;"></i>
+                                        {% elif att.content_type == 'application/pdf' %}
+                                        <i class="bi bi-file-earmark-pdf text-danger" style="font-size: 3rem;"></i>
+                                        {% else %}
+                                        <i class="bi bi-file-earmark text-muted" style="font-size: 3rem;"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="card-body py-2 px-3">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <small class="text-truncate" title="{{ att.filename }}">{{ att.filename }}</small>
+                                            <button class="btn btn-sm btn-outline-info ms-2" onclick="showPreview('{{ att.filename }}', '{{ att.content_type }}', `{{ att.extracted_text|replace('`', '\\`')|replace('\n', '\\n') }}`)" title="Preview">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                        </div>
+                                        <small class="text-muted">{{ att.content_type }} &bull; {{ (att.size_bytes / 1024)|round(1) }} KB</small>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
                 <!-- Comments Timeline -->
                 <div class="card mb-4">
                     <div class="card-header d-flex justify-content-between align-items-center">
@@ -255,6 +294,21 @@
         </div>
     </div>
 
+    <!-- Attachment Preview Modal -->
+    <div class="modal fade" id="previewModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content bg-dark">
+                <div class="modal-header border-secondary">
+                    <h6 class="modal-title" id="previewModalTitle">Attachment Preview</h6>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="previewContent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const ticketId = '{{ ticket.id }}';
@@ -303,6 +357,39 @@
                 body: JSON.stringify({ status: status }),
             });
             window.location.reload();
+        }
+
+        function showPreview(filename, contentType, extractedText) {
+            const modal = new bootstrap.Modal(document.getElementById('previewModal'));
+            document.getElementById('previewModalTitle').textContent = filename;
+            const container = document.getElementById('previewContent');
+
+            let icon, iconClass;
+            if (contentType.startsWith('image/')) {
+                icon = 'bi-file-image';
+                iconClass = 'text-info';
+            } else if (contentType === 'application/pdf') {
+                icon = 'bi-file-earmark-pdf';
+                iconClass = 'text-danger';
+            } else {
+                icon = 'bi-file-earmark';
+                iconClass = 'text-muted';
+            }
+
+            const text = extractedText.replace(/\\n/g, '\n');
+            container.innerHTML = `
+                <div class="text-center mb-3">
+                    <i class="bi ${icon} ${iconClass}" style="font-size: 4rem;"></i>
+                    <div class="mt-2">
+                        <span class="badge bg-secondary">${contentType}</span>
+                    </div>
+                </div>
+                <h6 class="border-bottom border-secondary pb-2 mb-3">
+                    <i class="bi bi-file-text"></i> Extracted Content
+                </h6>
+                <pre class="bg-black p-3 rounded" style="white-space: pre-wrap; font-size: 0.85rem; max-height: 400px; overflow-y: auto;">${text.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>
+            `;
+            modal.show();
         }
     </script>
 </body>
