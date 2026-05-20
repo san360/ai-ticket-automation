@@ -125,6 +125,17 @@ resource cogServicesContributorRole 'Microsoft.Authorization/roleAssignments@202
   }
 }
 
+// Foundry User role for the project's own system-assigned managed identity (required for evaluations)
+resource projectFoundryUserRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(aiProject.id, 'Foundry User Project Self')
+  scope: aiProject
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '53ca6127-db72-4b80-b1b0-d745d6d5456d')
+    principalId: aiProject.identity.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
 output name string = aiFoundry.name
 output id string = aiFoundry.id
 output endpoint string = 'https://${aiFoundryName}.services.ai.azure.com/api/projects/${aiProjectName}'
