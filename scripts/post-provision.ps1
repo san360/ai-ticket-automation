@@ -14,7 +14,7 @@ Write-Host "============================================================" -Foreg
 # ─────────────────────────────────────────────────────────────
 # Step 0: Gather environment outputs from azd
 # ─────────────────────────────────────────────────────────────
-Write-Host "`n[0/5] Gathering environment configuration..." -ForegroundColor Yellow
+Write-Host "[0/6] Gathering environment configuration..." -ForegroundColor Yellow
 
 $env:AI_FOUNDRY_ENDPOINT = azd env get-value AI_FOUNDRY_ENDPOINT
 $env:AI_PROJECT_NAME = azd env get-value AI_PROJECT_NAME
@@ -46,14 +46,14 @@ if ($missing) {
 # ─────────────────────────────────────────────────────────────
 # Step 1: Install Python dependencies
 # ─────────────────────────────────────────────────────────────
-Write-Host "`n[1/5] Installing Python dependencies..." -ForegroundColor Yellow
+Write-Host "`n[1/6] Installing Python dependencies..." -ForegroundColor Yellow
 pip install -r scripts/requirements.txt --quiet 2>&1 | Out-Null
 Write-Host "  Done" -ForegroundColor Green
 
 # ─────────────────────────────────────────────────────────────
 # Step 2: Deploy Foundry Agents (vector store + agents)
 # ─────────────────────────────────────────────────────────────
-Write-Host "`n[2/5] Deploying Foundry Agents..." -ForegroundColor Yellow
+Write-Host "`n[2/6] Deploying Foundry Agents..." -ForegroundColor Yellow
 python scripts/deploy-agents.py
 if ($LASTEXITCODE -ne 0) {
     Write-Host "  ERROR: Agent deployment failed (exit code $LASTEXITCODE)" -ForegroundColor Red
@@ -64,7 +64,7 @@ Write-Host "  Agents deployed successfully" -ForegroundColor Green
 # ─────────────────────────────────────────────────────────────
 # Step 3: Configure Logic App environment variables
 # ─────────────────────────────────────────────────────────────
-Write-Host "`n[3/5] Configuring Logic App app settings..." -ForegroundColor Yellow
+Write-Host "`n[3/6] Configuring Logic App app settings..." -ForegroundColor Yellow
 
 $outputsFile = "scripts/deployment-outputs.env"
 if (-not (Test-Path $outputsFile)) {
@@ -111,7 +111,7 @@ $settings | ForEach-Object { Write-Host "    $_" }
 # ─────────────────────────────────────────────────────────────
 # Step 4: Deploy Logic App Workflows
 # ─────────────────────────────────────────────────────────────
-Write-Host "`n[4/5] Deploying Logic App workflows..." -ForegroundColor Yellow
+Write-Host "`n[4/6] Deploying Logic App workflows..." -ForegroundColor Yellow
 
 $logicAppSrc = Join-Path $PSScriptRoot ".." "src" "logic-app"
 $zipPath = Join-Path $PSScriptRoot ".." "logic-app-deploy.zip"
@@ -148,9 +148,23 @@ Remove-Item $zipPath -ErrorAction SilentlyContinue
 Write-Host "  Workflows deployed: $($workflowDirs.Name -join ', ')" -ForegroundColor Green
 
 # ─────────────────────────────────────────────────────────────
-# Step 5: Verify deployments
+# Step 5: Set up Continuous Evaluation
 # ─────────────────────────────────────────────────────────────
-Write-Host "`n[5/5] Verifying deployments..." -ForegroundColor Yellow
+Write-Host "`n[5/6] Setting up continuous evaluation..." -ForegroundColor Yellow
+
+$env:FOUNDRY_ENDPOINT = $env:AI_FOUNDRY_ENDPOINT
+python scripts/run_evaluation.py
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "  WARNING: Continuous evaluation setup failed (exit code $LASTEXITCODE)" -ForegroundColor Yellow
+    Write-Host "  You can retry manually: python scripts/run_evaluation.py" -ForegroundColor Yellow
+} else {
+    Write-Host "  Continuous evaluation configured successfully" -ForegroundColor Green
+}
+
+# ─────────────────────────────────────────────────────────────
+# Step 6: Verify deployments
+# ─────────────────────────────────────────────────────────────
+Write-Host "`n[6/6] Verifying deployments..." -ForegroundColor Yellow
 
 # Verify Container App is healthy
 try {

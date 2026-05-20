@@ -1,11 +1,15 @@
 """REST API routes for the ServiceDesk simulator."""
 
+import base64
+
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import Response
 
 from database import db
 from models import (
     AddCommentRequest,
     AddFeedbackRequest,
+    Attachment,
     ClosureFeedback,
     Comment,
     CreateTicketRequest,
@@ -81,3 +85,40 @@ def reset_database():
     """Reset the database to initial seed state."""
     db.reset()
     return {"message": "Database reset to initial state", "ticket_count": db.stats()["total"]}
+
+
+@router.get("/incidents/{incident_id}/attachments", response_model=list[Attachment])
+def list_attachments(incident_id: str):
+    """List all attachments for an incident (metadata only, no file_data)."""
+    ticket = db.get(incident_id)
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Incident not found")
+    return ticket.attachments
+
+
+@router.get("/incidents/{incident_id}/attachments/{filename}")
+def download_attachment(incident_id: str, filename: str):
+    """Download a specific attachment file by filename."""
+    ticket = db.get(incident_id)
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Incident not found")
+
+    attachment = next((a for a in ticket.attachments if a.filename == filename), None)
+    if not attachment:
+        raise HTTPException(status_code=404, detail="Attachment not found")
+
+    if not attachment.file_data:
+        raise HTTPException(status_code=404, detail="Attachment file data not available")
+
+    # Parse the data URI: "data:<content_type>;base64,<data>"
+    try:
+        header, b64_data = attachment.file_data.split(",", 1)
+        file_bytes = base64.b64decode(b64_data)
+    except (ValueError, Exception):
+        raise HTTPException(status_code=500, detail="Failed to decode attachment data")
+
+    return Response(
+        content=file_bytes,
+        media_type=attachment.content_type,
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
