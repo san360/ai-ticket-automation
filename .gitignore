@@ -18,17 +18,12 @@ ENV/
 
 # Environment files
 *.env
-!evaluation/eval_dataset.jsonl
 local.settings.json
 
 # Build outputs
 dist/
 build/
 *.egg-info/
-
-# Evaluation outputs (generated)
-evaluation/eval_results.json
-evaluation/eval_summary.json
 
 # Deployment outputs
 scripts/deployment-outputs.env

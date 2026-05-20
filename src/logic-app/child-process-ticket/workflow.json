@@ -99,53 +99,189 @@
                     ]
                 },
                 "actions": {
-                    "Analyze_Document": {
-                        "type": "Http",
+                    "Has_File_Data": {
+                        "type": "If",
                         "runAfter": {},
-                        "inputs": {
-                            "method": "POST",
-                            "uri": "@{appsetting('AI_FOUNDRY_ENDPOINT')}/openai/v1/responses",
-                            "headers": {
-                                "Content-Type": "application/json"
-                            },
-                            "authentication": {
-                                "type": "ManagedServiceIdentity",
-                                "identity": "@{appsetting('MANAGED_IDENTITY_RESOURCE_ID')}",
-                                "audience": "https://ai.azure.com"
-                            },
-                            "body": {
-                                "agent_reference": {
-                                    "type": "agent_reference",
-                                    "name": "@{appsetting('DOCUMENT_AGENT_NAME')}"
+                        "expression": {
+                            "and": [
+                                {
+                                    "greater": [
+                                        "@length(coalesce(first(triggerBody()?['attachments'])?['file_data'], ''))",
+                                        0
+                                    ]
+                                }
+                            ]
+                        },
+                        "actions": {
+                            "Is_Image_Content": {
+                                "type": "If",
+                                "runAfter": {},
+                                "expression": {
+                                    "and": [
+                                        {
+                                            "startsWith": [
+                                                "@coalesce(first(triggerBody()?['attachments'])?['content_type'], '')",
+                                                "image/"
+                                            ]
+                                        }
+                                    ]
                                 },
-                                "input": [
-                                    {
-                                        "type": "message",
-                                        "role": "user",
-                                        "content": [
-                                            {
-                                                "type": "input_text",
-                                                "text": "Analyze this document attached to an HR ticket.\n\nTicket Context:\nSubject: @{triggerBody()?['subject']}\nCaller Name: @{triggerBody()?['caller_name']}\nCategory: @{body('Parse_Classification')?['category']}\nSubcategory: @{body('Parse_Classification')?['subcategory']}\n\nAttachment Details:\nFilename: @{first(triggerBody()?['attachments'])?['filename']}\nContent Type: @{first(triggerBody()?['attachments'])?['content_type']}\n\nExtracted Document Text:\n@{first(triggerBody()?['attachments'])?['extracted_text']}"
+                                "actions": {
+                                    "Analyze_Image_Visual": {
+                                        "type": "Http",
+                                        "runAfter": {},
+                                        "inputs": {
+                                            "method": "POST",
+                                            "uri": "@{appsetting('AI_FOUNDRY_ENDPOINT')}/openai/v1/responses",
+                                            "headers": {
+                                                "Content-Type": "application/json"
+                                            },
+                                            "authentication": {
+                                                "type": "ManagedServiceIdentity",
+                                                "identity": "@{appsetting('MANAGED_IDENTITY_RESOURCE_ID')}",
+                                                "audience": "https://ai.azure.com"
+                                            },
+                                            "body": {
+                                                "agent_reference": {
+                                                    "type": "agent_reference",
+                                                    "name": "@{appsetting('DOCUMENT_AGENT_NAME')}"
+                                                },
+                                                "input": [
+                                                    {
+                                                        "type": "message",
+                                                        "role": "user",
+                                                        "content": [
+                                                            {
+                                                                "type": "input_text",
+                                                                "text": "Analyze this document image attached to an HR ticket. Parse the image visually — extract all text, amounts, currencies, dates, and names directly from the document.\n\nTicket Context:\nSubject: @{triggerBody()?['subject']}\nCaller Name: @{triggerBody()?['caller_name']}\nCategory: @{body('Parse_Classification')?['category']}\nSubcategory: @{body('Parse_Classification')?['subcategory']}\n\nFilename: @{first(triggerBody()?['attachments'])?['filename']}"
+                                                            },
+                                                            {
+                                                                "type": "input_image",
+                                                                "image_url": "@{first(triggerBody()?['attachments'])?['file_data']}"
+                                                            }
+                                                        ]
+                                                    }
+                                                ]
                                             }
-                                        ]
+                                        },
+                                        "retryPolicy": {
+                                            "type": "exponential",
+                                            "count": 3,
+                                            "interval": "PT10S",
+                                            "maximumInterval": "PT1M"
+                                        }
                                     }
-                                ]
+                                },
+                                "else": {
+                                    "actions": {
+                                        "Analyze_PDF_Visual": {
+                                            "type": "Http",
+                                            "runAfter": {},
+                                            "inputs": {
+                                                "method": "POST",
+                                                "uri": "@{appsetting('AI_FOUNDRY_ENDPOINT')}/openai/v1/responses",
+                                                "headers": {
+                                                    "Content-Type": "application/json"
+                                                },
+                                                "authentication": {
+                                                    "type": "ManagedServiceIdentity",
+                                                    "identity": "@{appsetting('MANAGED_IDENTITY_RESOURCE_ID')}",
+                                                    "audience": "https://ai.azure.com"
+                                                },
+                                                "body": {
+                                                    "agent_reference": {
+                                                        "type": "agent_reference",
+                                                        "name": "@{appsetting('DOCUMENT_AGENT_NAME')}"
+                                                    },
+                                                    "input": [
+                                                        {
+                                                            "type": "message",
+                                                            "role": "user",
+                                                            "content": [
+                                                                {
+                                                                    "type": "input_text",
+                                                                    "text": "Analyze this PDF document attached to an HR ticket. Parse the document visually — extract all text, amounts, currencies, dates, and names directly from the PDF.\n\nTicket Context:\nSubject: @{triggerBody()?['subject']}\nCaller Name: @{triggerBody()?['caller_name']}\nCategory: @{body('Parse_Classification')?['category']}\nSubcategory: @{body('Parse_Classification')?['subcategory']}\n\nFilename: @{first(triggerBody()?['attachments'])?['filename']}"
+                                                                },
+                                                                {
+                                                                    "type": "input_file",
+                                                                    "filename": "@{first(triggerBody()?['attachments'])?['filename']}",
+                                                                    "file_data": "@{first(triggerBody()?['attachments'])?['file_data']}"
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            },
+                                            "retryPolicy": {
+                                                "type": "exponential",
+                                                "count": 3,
+                                                "interval": "PT10S",
+                                                "maximumInterval": "PT1M"
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         },
-                        "retryPolicy": {
-                            "type": "exponential",
-                            "count": 3,
-                            "interval": "PT10S",
-                            "maximumInterval": "PT1M"
+                        "else": {
+                            "actions": {
+                                "Analyze_Document_Text": {
+                                    "type": "Http",
+                                    "runAfter": {},
+                                    "inputs": {
+                                        "method": "POST",
+                                        "uri": "@{appsetting('AI_FOUNDRY_ENDPOINT')}/openai/v1/responses",
+                                        "headers": {
+                                            "Content-Type": "application/json"
+                                        },
+                                        "authentication": {
+                                            "type": "ManagedServiceIdentity",
+                                            "identity": "@{appsetting('MANAGED_IDENTITY_RESOURCE_ID')}",
+                                            "audience": "https://ai.azure.com"
+                                        },
+                                        "body": {
+                                            "agent_reference": {
+                                                "type": "agent_reference",
+                                                "name": "@{appsetting('DOCUMENT_AGENT_NAME')}"
+                                            },
+                                            "input": [
+                                                {
+                                                    "type": "message",
+                                                    "role": "user",
+                                                    "content": [
+                                                        {
+                                                            "type": "input_text",
+                                                            "text": "Analyze this document attached to an HR ticket.\n\nTicket Context:\nSubject: @{triggerBody()?['subject']}\nCaller Name: @{triggerBody()?['caller_name']}\nCategory: @{body('Parse_Classification')?['category']}\nSubcategory: @{body('Parse_Classification')?['subcategory']}\n\nAttachment Details:\nFilename: @{first(triggerBody()?['attachments'])?['filename']}\nContent Type: @{first(triggerBody()?['attachments'])?['content_type']}\n\nExtracted Document Text:\n@{first(triggerBody()?['attachments'])?['extracted_text']}"
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "retryPolicy": {
+                                        "type": "exponential",
+                                        "count": 3,
+                                        "interval": "PT10S",
+                                        "maximumInterval": "PT1M"
+                                    }
+                                }
+                            }
                         }
+                    },
+                    "Consolidate_Analysis_Response": {
+                        "type": "Compose",
+                        "runAfter": {
+                            "Has_File_Data": ["Succeeded"]
+                        },
+                        "inputs": "@coalesce(body('Analyze_Image_Visual'), body('Analyze_PDF_Visual'), body('Analyze_Document_Text'))"
                     },
                     "Parse_Document_Analysis": {
                         "type": "ParseJson",
                         "runAfter": {
-                            "Analyze_Document": ["Succeeded"]
+                            "Consolidate_Analysis_Response": ["Succeeded"]
                         },
                         "inputs": {
-                            "content": "@{trim(replace(replace(last(body('Analyze_Document')?['output'])?['content']?[0]?['text'], '```json', ''), '```', ''))}",
+                            "content": "@{trim(replace(replace(last(outputs('Consolidate_Analysis_Response')?['output'])?['content']?[0]?['text'], '```json', ''), '```', ''))}",
                             "schema": {
                                 "type": "object",
                                 "properties": {

@@ -1,9 +1,24 @@
 """In-memory database with seed/reset capability."""
 
+import base64
+import os
 from datetime import datetime, timezone
 
 from models import Comment, ClosureFeedback, Ticket, TicketStatus
 from seed_data import SEED_TICKETS
+
+ATTACHMENTS_DIR = os.path.join(os.path.dirname(__file__), "attachments")
+
+
+def _load_file_data(filename: str, content_type: str) -> str:
+    """Load a file from the attachments directory and return as data URI."""
+    filepath = os.path.join(ATTACHMENTS_DIR, filename)
+    if not os.path.isfile(filepath):
+        return ""
+    with open(filepath, "rb") as f:
+        data = f.read()
+    b64 = base64.b64encode(data).decode("utf-8")
+    return f"data:{content_type};base64,{b64}"
 
 
 class TicketDatabase:
@@ -17,6 +32,11 @@ class TicketDatabase:
         """Reset database to default seed state."""
         self._store.clear()
         for data in SEED_TICKETS:
+            # Inject file_data from disk for each attachment
+            if "attachments" in data:
+                for att in data["attachments"]:
+                    if not att.get("file_data"):
+                        att["file_data"] = _load_file_data(att["filename"], att["content_type"])
             ticket = Ticket(**data)
             self._store[ticket.id] = ticket
 

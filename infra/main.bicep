@@ -102,8 +102,8 @@ module aiFoundry './modules/ai-foundry.bicep' = {
     modelDeploymentName: modelDeploymentName
     modelVersion: modelVersion
     managedIdentityPrincipalId: identity.outputs.principalId
+    appInsightsResourceId: appInsights.outputs.id
     appInsightsConnectionString: appInsights.outputs.connectionString
-    appInsightsInstrumentationKey: appInsights.outputs.instrumentationKey
   }
 }
 

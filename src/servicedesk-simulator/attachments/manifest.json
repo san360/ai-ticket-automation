@@ -1,0 +1,44 @@
+{
+  "arztzeugnis_mueller_2026.pdf": {
+    "size_bytes": 1480
+  },
+  "arztzeugnis_other_person.pdf": {
+    "size_bytes": 1470
+  },
+  "old_certificate_jan2025.pdf": {
+    "size_bytes": 1472
+  },
+  "arztzeugnis_suspicious.pdf": {
+    "size_bytes": 1475
+  },
+  "medical_cert_fakeclinic.pdf": {
+    "size_bytes": 1479
+  },
+  "zeugnis_universitaetsspital.pdf": {
+    "size_bytes": 1554
+  },
+  "arztzeugnis_gln_mismatch.pdf": {
+    "size_bytes": 1490
+  },
+  "hotel_rechnung_muenchen_2026.pdf": {
+    "size_bytes": 1813
+  },
+  "sbb_ticket_zuerich_muenchen.pdf": {
+    "size_bytes": 1624
+  },
+  "hotel_invoice_altered.pdf": {
+    "size_bytes": 1676
+  },
+  "krankmeldung_scan.png": {
+    "size_bytes": 35760
+  },
+  "IMG_20260519_receipt.jpg": {
+    "size_bytes": 19342
+  },
+  "taxi_quittung_muenchen.jpg": {
+    "size_bytes": 19744
+  },
+  "restaurant_rechnung.jpg": {
+    "size_bytes": 32413
+  }
+}

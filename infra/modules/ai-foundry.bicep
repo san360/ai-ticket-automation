@@ -19,11 +19,11 @@ param modelVersion string
 @description('Principal ID of the managed identity')
 param managedIdentityPrincipalId string
 
+@description('Application Insights resource ID')
+param appInsightsResourceId string
+
 @description('Application Insights connection string for tracing')
 param appInsightsConnectionString string
-
-@description('Application Insights instrumentation key')
-param appInsightsInstrumentationKey string
 
 // AI Foundry resource (AIServices kind)
 resource aiFoundry 'Microsoft.CognitiveServices/accounts@2025-04-01-preview' = {
@@ -57,18 +57,20 @@ resource aiProject 'Microsoft.CognitiveServices/accounts/projects@2025-04-01-pre
 }
 
 // Connect Application Insights to AI Foundry via connection
-resource appInsightsConnection 'Microsoft.CognitiveServices/accounts/projects/connections@2025-04-01-preview' = {
-  name: 'appinsights'
-  parent: aiProject
+resource appInsightsConnection 'Microsoft.CognitiveServices/accounts/connections@2025-04-01-preview' = {
+  name: '${aiFoundryName}-appinsights'
+  parent: aiFoundry
   properties: {
     category: 'AppInsights'
-    target: appInsightsConnectionString
+    target: appInsightsResourceId
     authType: 'ApiKey'
+    isSharedToAll: true
     credentials: {
-      key: appInsightsInstrumentationKey
+      key: appInsightsConnectionString
     }
     metadata: {
       ApiType: 'Azure'
+      ResourceId: appInsightsResourceId
     }
   }
 }

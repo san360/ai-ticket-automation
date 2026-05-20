@@ -91,7 +91,7 @@ def main():
     print(f"  Message Agent Name:         {message_name}")
     print(f"  Document Analysis Agent:    {doc_agent_name}")
 
-    # Write outputs for CI/CD consumption
+    # Write outputs for post-provision script consumption
     outputs_path = Path(__file__).parent / "deployment-outputs.env"
     with open(outputs_path, "w") as f:
         f.write(f"VECTOR_STORE_ID={vector_store_id}\n")

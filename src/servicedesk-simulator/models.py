@@ -33,6 +33,7 @@ class Attachment(BaseModel):
     content_type: str
     size_bytes: int
     extracted_text: str = ""
+    file_data: str = ""  # base64-encoded file content (data URI format)
     url: str = ""
     analysis_result: Optional[dict] = None
 
